@@ -1,6 +1,12 @@
 {{define "status_boxes"}}
-<div class="status-group">
-	<div class="text-sm status-group-title">Pool</div>
+<section class="status-group status-group-pool" aria-labelledby="pool-status-title">
+	<div class="status-group-heading">
+		<div>
+			<div class="status-group-kicker">Mining operation</div>
+			<h2 class="status-group-title" id="pool-status-title">Pool performance</h2>
+		</div>
+		<div class="status-group-note">Live operating window</div>
+	</div>
 	<div class="grid status-grid">
 		<div class="card">
 			<div class="label">Open connections</div>
@@ -52,9 +58,15 @@
 			{{end}}
 		</div>
 	</div>
-</div>
-<div class="status-group">
-	<div class="text-sm status-group-title">NETWORK</div>
+</section>
+<section class="status-group status-group-network" aria-labelledby="network-status-title">
+	<div class="status-group-heading">
+		<div>
+			<div class="status-group-kicker">Bitcoin network</div>
+			<h2 class="status-group-title" id="network-status-title">Chain conditions</h2>
+		</div>
+		<div class="status-group-note">Current network context</div>
+	</div>
 	<div class="grid status-grid">
 		<div class="card">
 			<div class="label">Network hashrate</div>
@@ -78,5 +90,5 @@
 			<div class="card-context" id="status-btc-price-updated">Updated --</div>
 		</div>
 	</div>
-</div>
+</section>
 {{end}}

@@ -10,7 +10,7 @@
 </head>
 <body>
 	{{template "header" .}}
-	<main class="page" id="content">
+	<main class="page operations-page operations-server-page" id="content">
 		<noscript>
 			<div class="card">
 				<p class="text-sm" style="color:#f88d8d;margin:0;">
@@ -20,13 +20,13 @@
 		</noscript>
 		<h1>Server Stats</h1>
 
-		<div class="card">
+		<div class="card operation-panel operation-panel-cyan" data-channel="BACKENDS // 01">
 			<div class="label">Backend status</div>
 			<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-top:8px;">
 				<div>
 					<div class="label">Bitcoin RPC</div>
 					<div class="mono" id="server-rpc-status">--</div>
-					<div class="text-sm" id="server-rpc-counts">disconnects: --, reconnects: --</div>
+					<div class="text-sm operation-inline-stats" id="server-rpc-counts">disconnects: --, reconnects: --</div>
 				</div>
 				<div>
 					<div class="label">Accounting</div>
@@ -34,12 +34,12 @@
 				</div>
 				<div>
 					<div class="label">Job feed errors</div>
-					<div class="mono" id="server-job-feed-error">--</div>
+					<div class="mono operation-event-list operation-event-list-compact" id="server-job-feed-error">--</div>
 				</div>
 				<div>
 					<div class="label">ZMQ feed</div>
 					<div class="mono" id="server-zmq-status">--</div>
-					<div class="text-sm" id="server-zmq-counts">disconnects: --, connects: --</div>
+					<div class="text-sm operation-inline-stats" id="server-zmq-counts">disconnects: --, connects: --</div>
 				</div>
 				<div id="server-zmq-rawblock-row" style="display:none;">
 					<div class="label">ZMQ raw block (time/bytes)</div>
@@ -56,7 +56,7 @@
 			</div>
 		</div>
 
-		<div class="card">
+		<div class="card operation-panel operation-panel-magenta" data-channel="RUNTIME // 02">
 			<div class="label">Process stats</div>
 			<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-top:8px;">
 				<div>
@@ -90,7 +90,7 @@
 			</div>
 		</div>
 
-		<div class="card">
+		<div class="card operation-panel operation-panel-violet operation-api-panel" data-channel="INTERFACES // 03">
 			<div class="label">JSON API endpoints</div>
 			<ul class="list">
 				<li><a class="mono" href="/api/overview">/api/overview</a> &mdash; cached overview data used by the main status UI</li>
@@ -102,7 +102,7 @@
 			</ul>
 		</div>
 
-		<div style="margin-top:16px;padding:8px;text-align:center;font-size:0.85em;color:#888;">
+		<div class="operation-refresh-status" style="margin-top:16px;padding:8px;text-align:center;font-size:0.85em;color:#888;">
 			<div class="mono" id="server-data-refreshed">Data loading...</div>
 		</div>
 
@@ -181,47 +181,79 @@
 			rowEl.style.display = visible ? '' : 'none';
 		}
 
+		function renderInlineStats(element, entries) {
+			if (!element) return;
+			element.replaceChildren();
+			entries.forEach((entry) => {
+				const item = document.createElement('span');
+				item.className = 'operation-inline-stat';
+				const label = document.createElement('span');
+				label.textContent = entry.label;
+				const value = document.createElement('strong');
+				value.textContent = String(entry.value);
+				item.append(label, value);
+				element.appendChild(item);
+			});
+		}
+
+		function setHealthState(element, healthy, errorText) {
+			if (!element) return;
+			element.classList.remove('operation-state-good', 'operation-state-danger');
+			element.classList.add('operation-state', healthy ? 'operation-state-good' : 'operation-state-danger');
+			element.textContent = healthy ? 'OK' : (errorText || 'Offline');
+		}
+
+		function renderJobFeedHistory(element, history, lastError, lastErrorAt) {
+			if (!element) return;
+			element.replaceChildren();
+			if (!history.length) {
+				const empty = document.createElement('div');
+				empty.className = 'operation-event-empty';
+				empty.textContent = 'No recorded errors';
+				element.appendChild(empty);
+				return;
+			}
+			const isEvent = (message) => String(message || '').trim().toLowerCase().startsWith('event:');
+			history.slice().reverse().forEach((message, index) => {
+				const event = isEvent(message);
+				const row = document.createElement('div');
+				row.className = 'operation-event-row operation-event-row-compact';
+				const kind = document.createElement('span');
+				kind.className = 'operation-event-kind';
+				kind.textContent = event ? (index === 0 ? 'Event' : 'Previous event') : (index === 0 ? 'Error' : 'Previous');
+				const detail = document.createElement('span');
+				detail.className = 'operation-event-message';
+				detail.textContent = String(message || 'Unspecified');
+				if (!event && index === 0 && lastError && lastErrorAt) {
+					detail.textContent += ` · ${lastErrorAt}`;
+				}
+				row.append(kind, detail);
+				element.appendChild(row);
+			});
+		}
+
 		function updateStatusPage(data) {
 			if (!data) return;
 			if (uptimeEl && data.uptime) {
 				uptimeEl.textContent = formatDuration(data.uptime);
 			}
-			if (rpcStatusEl) {
-				rpcStatusEl.textContent = data.rpc_healthy ? 'OK' : (data.rpc_error ? 'Offline' : 'Offline');
-			}
-			if (rpcCountsEl) {
-				const disconnects = data.rpc_disconnects ?? 0;
-				const reconnects = data.rpc_reconnects ?? 0;
-				rpcCountsEl.textContent = `disconnects: ${disconnects}, reconnects: ${reconnects}`;
-			}
-			if (accountingEl) {
-				accountingEl.textContent = data.accounting_error ? `Error: ${data.accounting_error}` : 'OK';
-			}
-			if (jobFeedEl) {
-				const rawHistory = data.job_feed?.error_history ?? [];
-				if (rawHistory.length > 0) {
-					const history = rawHistory.slice().reverse();
-					const isEvent = (msg) => String(msg || '').trim().toLowerCase().startsWith('event:');
-					const entries = history.map((msg, idx) => {
-						const prefix = isEvent(msg) ? (idx === 0 ? 'Event' : 'Previous event') : (idx === 0 ? 'Error' : 'Previous');
-						return `${prefix}: ${msg}`;
-					});
-					if (!isEvent(history[0]) && data.job_feed?.last_error && data.job_feed?.last_error_at) {
-						entries[0] += ` (at ${data.job_feed.last_error_at})`;
-					}
-					jobFeedEl.textContent = entries.join(' | ');
-				} else {
-					jobFeedEl.textContent = 'None';
-				}
-			}
-			if (zmqStatusEl) {
-				zmqStatusEl.textContent = data.job_feed?.zmq_healthy ? 'OK' : 'Offline';
-			}
-			if (zmqCountsEl) {
-				const disconnects = data.job_feed?.zmq_disconnects ?? 0;
-				const reconnects = data.job_feed?.zmq_reconnects ?? 0;
-				zmqCountsEl.textContent = `disconnects: ${disconnects}, connects: ${reconnects}`;
-			}
+			setHealthState(rpcStatusEl, Boolean(data.rpc_healthy), 'Offline');
+			renderInlineStats(rpcCountsEl, [
+				{ label: 'Disconnects', value: data.rpc_disconnects ?? 0 },
+				{ label: 'Reconnects', value: data.rpc_reconnects ?? 0 },
+			]);
+			setHealthState(accountingEl, !data.accounting_error, data.accounting_error ? `Error: ${data.accounting_error}` : 'Offline');
+			renderJobFeedHistory(
+				jobFeedEl,
+				data.job_feed?.error_history ?? [],
+				data.job_feed?.last_error,
+				data.job_feed?.last_error_at,
+			);
+			setHealthState(zmqStatusEl, Boolean(data.job_feed?.zmq_healthy), 'Offline');
+			renderInlineStats(zmqCountsEl, [
+				{ label: 'Disconnects', value: data.job_feed?.zmq_disconnects ?? 0 },
+				{ label: 'Connects', value: data.job_feed?.zmq_reconnects ?? 0 },
+			]);
 			if (zmqRawBlockEl) {
 				const rawBlockAt = data.job_feed?.last_raw_block_at;
 				const rawBlockBytes = data.job_feed?.last_raw_block_bytes;

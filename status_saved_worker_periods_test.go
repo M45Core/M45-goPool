@@ -100,8 +100,8 @@ func TestRecordSavedOnlineWorkerPeriodsRecordsPoolBestShareForSampledMinuteOnly(
 	hashB := "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
 	hashC := "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
 
-	// Register A and B as saved workers; C is intentionally omitted so its
-	// ring-buffer entry (if any) is ignored by the pool aggregation.
+	// Register A and B as saved workers; C is intentionally omitted. Its share
+	// should affect the all-worker pool dot without creating saved-worker data.
 	for _, h := range []string{hashA, hashB} {
 		if _, err := store.db.Exec(
 			"INSERT OR IGNORE INTO saved_workers (user_id, worker, worker_hash, worker_display, notify_enabled) VALUES (?, ?, ?, ?, 1)",
@@ -115,15 +115,20 @@ func TestRecordSavedOnlineWorkerPeriodsRecordsPoolBestShareForSampledMinuteOnly(
 	bucket := now.UTC().Truncate(savedWorkerPeriodBucket)
 	sampleBucket := bucket.Add(-savedWorkerPeriodBucket)
 
-	// Pre-populate the minute-best ring buffer: this is what the new pool
-	// best-share path reads via ConsumeSavedWorkerMinuteBestDifficulty.
+	// Pre-populate the saved-worker minute rings used only by their individual
+	// histories.
 	store.UpdateSavedWorkerMinuteBestDifficulty(hashA, 1200, sampleBucket.Add(10*time.Second))
 	store.UpdateSavedWorkerMinuteBestDifficulty(hashB, 3400, sampleBucket.Add(20*time.Second))
-	// C has a high difficulty but is not a saved worker — must not affect pool best.
 	store.UpdateSavedWorkerMinuteBestDifficulty(hashC, 9900, sampleBucket.Add(5*time.Second))
+
+	metrics := &PoolMetrics{}
+	metrics.observePoolMinuteBestDifficulty(1200, sampleBucket.Add(10*time.Second))
+	metrics.observePoolMinuteBestDifficulty(3400, sampleBucket.Add(20*time.Second))
+	metrics.observePoolMinuteBestDifficulty(9900, sampleBucket.Add(5*time.Second))
 
 	s := &StatusServer{
 		workerLists:        store,
+		metrics:            metrics,
 		savedWorkerPeriods: make(map[string]*savedWorkerPeriodRing),
 	}
 	workers := []WorkerView{
@@ -146,8 +151,18 @@ func TestRecordSavedOnlineWorkerPeriodsRecordsPoolBestShareForSampledMinuteOnly(
 	if ring == nil {
 		t.Fatalf("missing %q history ring", savedWorkerPeriodPoolKey)
 	}
-	gotBest := decodeBestShareSI16(ring.bestDifficultyQ[idx])
-	if gotBest < 3000 || gotBest > 3800 {
-		t.Fatalf("pool best-share decoded=%v, expected around 3400", gotBest)
+	if got, want := ring.bestDifficultyQ[idx], encodeBestShareSI16(9900); got != want {
+		t.Fatalf("pool best-share q=%d want all-worker maximum q=%d", got, want)
+	}
+	ringA := s.savedWorkerPeriods[hashA]
+	if ringA == nil || ringA.bestDifficultyQ[idx] != encodeBestShareSI16(1200) {
+		t.Fatalf("saved worker A history changed or missing")
+	}
+	ringB := s.savedWorkerPeriods[hashB]
+	if ringB == nil || ringB.bestDifficultyQ[idx] != encodeBestShareSI16(3400) {
+		t.Fatalf("saved worker B history changed or missing")
+	}
+	if _, exists := s.savedWorkerPeriods[hashC]; exists {
+		t.Fatal("unsaved worker C unexpectedly received a saved-worker history ring")
 	}
 }

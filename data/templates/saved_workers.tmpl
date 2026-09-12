@@ -611,7 +611,7 @@
 		}
 	</style>
 </head>
-	<body>
+	<body class="saved-workers-page-body">
 		<script>
 			(function() {
 				let layoutModeRaf = 0;
@@ -662,7 +662,7 @@
 			})();
 		</script>
 	{{template "header" .}}
-	<main class="page" id="content">
+	<main class="page saved-workers-page" id="content">
 		<noscript>
 			<div class="card">
 				<p class="text-sm" style="color:#f88d8d;margin:0;">
@@ -670,9 +670,16 @@
 				</p>
 			</div>
 		</noscript>
+		<div class="saved-workers-masthead" aria-labelledby="saved-workers-title">
+			<div>
+				<div class="saved-workers-kicker">MINER OPERATIONS // LIVE COMMAND GRID</div>
+				<h1 id="saved-workers-title">Saved workers <span>//</span> Rig deck</h1>
+			</div>
+			<div class="saved-workers-live-marker"><span aria-hidden="true"></span> Fleet telemetry</div>
+		</div>
 		{{if .ClerkUser}}
 		<div class="panel-stack panel-stack-wide">
-			<div class="card" id="savedWorkersAuthNotice" style="display:none; border-color:rgba(248,141,141,0.55);">
+			<div class="card saved-workers-command-panel saved-workers-session-panel" data-channel="SESSION ALERT // 00" id="savedWorkersAuthNotice" style="display:none; border-color:rgba(248,141,141,0.55);">
 				<p class="text-sm" style="margin:0; color:#f3b5b5;">
 					<span id="savedWorkersAuthNoticeText">Session expired.</span>
 					<a id="savedWorkersAuthNoticeLink" href="/sign-in?redirect=/saved-workers" class="mono">Sign in again</a>
@@ -684,17 +691,17 @@
 				{{template "status_boxes" .}}
 			</div>
 
-			<div class="card graph-card">
+			<div class="card graph-card saved-workers-command-panel saved-workers-history-panel" data-channel="FLEET SIGNAL // 01">
 				<div class="graph-card-header">
 					<div class="label">Saved Worker History</div>
 					<p class="text-sm graph-card-description" id="savedWorkersTopChartMeta">
-						Cyan bars: total hashrate. Amber line: best share.
+						Cyan bars: total hashrate. Magenta line: best share.
 					</p>
 				</div>
 				<canvas id="savedWorkersHashrateChart" style="width:100%;height:220px;"></canvas>
 			</div>
 
-			<div class="card" id="onlineWorkersCard" {{if not .OnlineWorkerEntries}}style="display:none;"{{end}}>
+			<div class="card saved-workers-command-panel saved-workers-fleet-panel" data-channel="ACTIVE RIGS // 02" id="onlineWorkersCard" {{if not .OnlineWorkerEntries}}style="display:none;"{{end}}>
 				<div style="display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;">
 					<h2 style="margin-top:0;">Your workers</h2>
 					<div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
@@ -824,7 +831,7 @@
 			</div>
 
 			{{$offlineCount := len .OfflineWorkerEntries}}
-			<div class="card offline-card" id="offlineSection" {{if eq $offlineCount 0}}style="display:none;"{{end}}>
+			<div class="card offline-card saved-workers-command-panel saved-workers-offline-panel" data-channel="DARK RIGS // 03" id="offlineSection" {{if eq $offlineCount 0}}style="display:none;"{{end}}>
 				<div class="offline-card-header">
 					<div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
 						<h2 style="margin:0;">Offline Workers</h2>
@@ -871,7 +878,8 @@
 				</p>
 			</div>
 
-			<div class="card">
+			<div class="saved-workers-control-grid">
+			<div class="card saved-workers-command-panel saved-workers-add-panel" data-channel="ENROLL // 04">
 				<div style="display:flex; align-items:flex-start; justify-content:space-between; gap:12px;">
 					<h2 style="margin-top:0;">
 						{{if eq .SavedWorkersCount 0}}
@@ -889,7 +897,7 @@
 				</form>
 			</div>
 
-			<div class="card">
+			<div class="card saved-workers-command-panel saved-workers-discovery-panel" data-channel="DISCOVERY // 05">
 				<div style="display:flex; align-items:flex-start; justify-content:space-between; gap:12px;">
 					<div>
 						<h2 style="margin-top:0;">Find miners by wallet</h2>
@@ -965,8 +973,9 @@
 					</div>
 				{{end}}
 			</div>
+			</div>
 
-			<div class="card">
+			<div class="card saved-workers-command-panel saved-workers-options-panel" data-channel="UPLINK // 06">
 				<div style="display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;">
 					<h2 style="margin-top:0;">Options</h2>
 				</div>
@@ -997,15 +1006,15 @@
 			</div>
 		</div>
 		{{else}}
-		<div class="card">
+		<div class="card saved-workers-command-panel saved-workers-auth-panel" data-channel="AUTH GATE // 00">
 			<h2>Saved workers</h2>
 			<p class="text-sm">Sign in to save workers for quick access.</p>
 			<a class="btn" href="/sign-in?redirect=/saved-workers">Sign in</a>
 		</div>
 		{{end}}
 
-	<h2>Found blocks</h2>
-	<div class="card">
+	<h2 class="saved-workers-found-heading">Found blocks</h2>
+	<div class="card saved-workers-command-panel saved-workers-blocks-panel" data-channel="BLOCK ARCHIVE // 07">
 		<div style="overflow-x:auto;">
 			<table class="table" id="saved-workers-found-blocks-table">
 				<thead>
@@ -1587,28 +1596,28 @@
 
 		function savedWorkersGraphLabelColor() {
 			const isLight = document.documentElement && document.documentElement.getAttribute('data-theme') === 'light';
-			return isLight ? '#4b5568' : '#b3bbd4';
+			return isLight ? '#36535d' : '#93aab5';
 		}
 
 		function savedWorkersGraphTickColor() {
 			const isLight = document.documentElement && document.documentElement.getAttribute('data-theme') === 'light';
-			return isLight ? 'rgba(75, 85, 104, 0.52)' : 'rgba(179, 187, 212, 0.46)';
+			return isLight ? 'rgba(54, 83, 93, 0.42)' : 'rgba(24, 48, 65, 0.72)';
 		}
 
 		function savedWorkersGraphAccentColor() {
 			const isLight = document.documentElement && document.documentElement.getAttribute('data-theme') === 'light';
-			return isLight ? '#2e5c8a' : '#2cf1c2';
+			return isLight ? '#007f87' : '#29f5e8';
 		}
 
 		function savedWorkersGraphAmberColor() {
 			const isLight = document.documentElement && document.documentElement.getAttribute('data-theme') === 'light';
-			return isLight ? '#8a5200' : '#f6b34a';
+			return isLight ? '#b8166d' : '#ff42a8';
 		}
 
 		function hexToRGBA(hex, alpha) {
 			const normalized = String(hex || '').trim().replace(/^#/, '');
 			const a = Math.max(0, Math.min(1, Number(alpha)));
-			if (!/^[0-9a-fA-F]{6}$/.test(normalized)) return `rgba(44, 241, 194, ${a})`;
+			if (!/^[0-9a-fA-F]{6}$/.test(normalized)) return `rgba(41, 245, 232, ${a})`;
 			const r = parseInt(normalized.slice(0, 2), 16);
 			const g = parseInt(normalized.slice(2, 4), 16);
 			const b = parseInt(normalized.slice(4, 6), 16);
@@ -3675,8 +3684,8 @@
 		function updateGridCards(newData) {
 			if (!newData) return;
 			const poolGroupTitle = document.querySelector('.status-group .status-group-title');
-			if (poolGroupTitle && poolGroupTitle.textContent.trim().toLowerCase() === 'pool') {
-				poolGroupTitle.textContent = 'Your stats';
+			if (poolGroupTitle && poolGroupTitle.textContent.trim().toLowerCase() === 'pool performance') {
+				poolGroupTitle.textContent = 'Your performance';
 			}
 			const cardContainers = document.querySelectorAll('.grid > .card');
 			cardContainers.forEach(card => {

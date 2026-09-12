@@ -2,60 +2,120 @@
 
 {{define "header"}}
 <a class="skip-link" href="#content">Skip to content</a>
-<header>
+<svg class="cyber-icon-sprite" aria-hidden="true">
+	<defs>
+		<symbol id="icon-menu" viewBox="0 0 24 24">
+			<path d="M4 6h16M4 12h16M4 18h16"/><path class="icon-signal" d="M4 6h4M16 12h4M4 18h7"/>
+		</symbol>
+		<symbol id="icon-overview" viewBox="0 0 24 24">
+			<path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z"/><path class="icon-signal" d="M7 4v6M14 17h6"/>
+		</symbol>
+		<symbol id="icon-workers" viewBox="0 0 24 24">
+			<path d="M8.5 10.5 6 9V6l2.5-1.5L11 6v3zM15.5 10.5 13 9V6l2.5-1.5L18 6v3zM4 19v-3l4.5-2 3.5 1.6 3.5-1.6 4.5 2v3"/><path class="icon-signal" d="M8 19v-2h8v2M12 12V8"/>
+		</symbol>
+		<symbol id="icon-pool-stats" viewBox="0 0 24 24">
+			<path d="M4 19V5M4 19h16M7 16v-3M11 16V9M15 16v-5M19 16V6"/><path class="icon-signal" d="m6 10 4-3 4 2 5-5"/>
+		</symbol>
+		<symbol id="icon-node-info" viewBox="0 0 24 24">
+			<path d="m12 3 7 4v10l-7 4-7-4V7zM9 8h4.2a2 2 0 0 1 0 4H9m0 0h4.8a2 2 0 0 1 0 4H9M11 6v12M14 6v2M14 16v2"/><path class="icon-signal" d="M3 12H1M23 12h-2"/>
+		</symbol>
+		<symbol id="icon-server-stats" viewBox="0 0 24 24">
+			<path d="M4 4h16v5H4zM4 10h16v5H4zM4 16h16v4H4zM7 6.5h.1M7 12.5h.1M7 18h.1"/><path class="icon-signal" d="M11 6.5h6M11 12.5h6M11 18h6"/>
+		</symbol>
+		<symbol id="icon-guide" viewBox="0 0 24 24">
+			<path d="M3 5h6a3 3 0 0 1 3 3v11a3 3 0 0 0-3-3H3zM21 5h-6a3 3 0 0 0-3 3v11a3 3 0 0 1 3-3h6z"/><path class="icon-signal" d="M16 9h3M16 12h3M5 9h3"/>
+		</symbol>
+		<symbol id="icon-umbrel" viewBox="0 0 24 24">
+			<path d="M5 8h14l-1 10H6zM8 8a4 4 0 0 1 8 0M8 12h8M9 15h6"/><path class="icon-signal" d="M12 3v5M4 21h16"/>
+		</symbol>
+		<symbol id="icon-about" viewBox="0 0 24 24">
+			<path d="m12 3 8 5v8l-8 5-8-5V8zM12 10v7"/><path class="icon-signal" d="M12 7h.01"/>
+		</symbol>
+		<symbol id="icon-admin" viewBox="0 0 24 24">
+			<path d="m12 3 7 3v5c0 4.5-2.6 7.7-7 10-4.4-2.3-7-5.5-7-10V6zM9 12h6M12 9v6"/><path class="icon-signal" d="M8 6.2 12 8l4-1.8"/>
+		</symbol>
+		<symbol id="icon-poolcensus" viewBox="0 0 24 24">
+			<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><path d="M12 4v16M4 12h16"/><path class="icon-signal" d="m12 12 6-6M17 7h2v2"/>
+		</symbol>
+		<symbol id="icon-github" viewBox="0 0 24 24">
+			<path d="m8 6-4 6 4 6M16 6l4 6-4 6M10 20l4-16"/><path class="icon-signal" d="M7 12h10"/>
+		</symbol>
+		<symbol id="icon-discord" viewBox="0 0 24 24">
+			<path d="M5 6h14l2 11-4 3-2-3H9l-2 3-4-3zM8 10h.01M16 10h.01M8 14c2.5 1.3 5.5 1.3 8 0"/><path class="icon-signal" d="M7 6 5 4M17 6l2-2"/>
+		</symbol>
+		<symbol id="icon-moon" viewBox="0 0 24 24">
+			<path d="M19 15a8 8 0 0 1-10-10 8 8 0 1 0 10 10z"/><path class="icon-signal" d="M17 4v3M15.5 5.5h3"/>
+		</symbol>
+		<symbol id="icon-sun" viewBox="0 0 24 24">
+			<path d="M12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10zM12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5 19 19M19 5l-1.5 1.5M6.5 17.5 5 19"/><path class="icon-signal" d="m12 8 1.2 2.8L16 12l-2.8 1.2L12 16l-1.2-2.8L8 12l2.8-1.2z"/>
+		</symbol>
+	</defs>
+</svg>
+<header class="site-rail">
 	<div class="header-inner">
-		<div class="brand">
-			<img src="/logo.png" alt="{{.BrandName}} logo" class="brand-logo">
-			<div>
+		<a class="brand" href="/" aria-label="{{if .BrandDomain}}{{.BrandDomain}}{{else}}{{.BrandName}}{{end}} overview">
+			<picture class="brand-mark">
+				<source media="(min-width: 901px)" srcset="/logo-full.png">
+				<img src="/logo.png" alt="{{.BrandName}} logo" class="brand-logo">
+			</picture>
+			<div class="brand-copy">
 				{{if .BrandDomain}}
-				<div class="brand-title">{{.BrandDomain}}</div>
+					<div class="brand-title">{{.BrandDomain}}</div>
+				{{else}}
+					<div class="brand-title">{{.BrandName}}</div>
 				{{end}}
 				{{if .ServerLocation}}
-				<div class="brand-sub" style="font-weight: 600; color: var(--accent);">{{.ServerLocation}}</div>
-				{{end}}
-				{{if .ListenAddr}}
-				<div class="brand-sub">
-					stratum:{{addrPort .ListenAddr}}{{if .StratumTLSListen}} / tls:{{addrPort .StratumTLSListen}}{{end}}
-				</div>
+					<div class="brand-sub">{{.ServerLocation}}</div>
 				{{end}}
 				{{if .Tagline}}
-				<div class="brand-sub">{{.Tagline}}</div>
+					<div class="brand-sub brand-tagline">{{.Tagline}}</div>
 				{{end}}
 			</div>
-		</div>
-		<nav class="header-links">
-			<a class="header-link home-link" href="/"><span class="nav-icon" aria-hidden="true"><img src="/icons/dark/icon-overview.png" alt="" class="nav-icon-img themed-icon" data-icon="icon-overview.png"></span><span class="nav-text">Overview</span></a>
-			<div class="header-dropdown">
-				<button class="header-link more-info-toggle" id="moreInfoMenuButton" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="moreInfoMenu">
-					<span class="nav-icon" aria-hidden="true"><img src="/icons/dark/icon-menu.png" alt="" class="nav-icon-img themed-icon" data-icon="icon-menu.png"></span><span class="nav-text">Menu</span> ▼
-				</button>
-				<div class="header-dropdown-menu" id="moreInfoMenu" role="menu" aria-labelledby="moreInfoMenuButton">
-					<a class="header-dropdown-link" role="menuitem" href="/pool"><img src="/icons/dark/icon-pool-stats.png" alt="" class="menu-icon-img themed-icon" data-icon="icon-pool-stats.png">Pool Stats</a>
-					<a class="header-dropdown-link" role="menuitem" href="/node"><img src="/icons/dark/icon-node-info.png" alt="" class="menu-icon-img themed-icon" data-icon="icon-node-info.png">Bitcoin Node Info</a>
-					<a class="header-dropdown-link" role="menuitem" href="/server"><img src="/icons/dark/icon-server-stats.png" alt="" class="menu-icon-img themed-icon" data-icon="icon-server-stats.png">Server Stats</a>
-					<div class="header-dropdown-divider" role="separator" aria-hidden="true"></div>
-					<a class="header-dropdown-link" role="menuitem" href="/help"><img src="/icons/dark/icon-solo-mining-101.png" alt="" class="menu-icon-img themed-icon" data-icon="icon-solo-mining-101.png">Solo Mining 101</a>
-					<a class="header-dropdown-link" role="menuitem" href="/umbrel"><img src="/icons/dark/icon-node-info.png" alt="" class="menu-icon-img themed-icon" data-icon="icon-node-info.png">Run on Umbrel</a>
-					<a class="header-dropdown-link" role="menuitem" href="/about"><img src="/icons/dark/icon-about.png" alt="" class="menu-icon-img themed-icon" data-icon="icon-about.png">About Us</a>
-					<div class="header-dropdown-divider" role="separator" aria-hidden="true"></div>
-					<a class="header-dropdown-link" role="menuitem" href="/admin"><img src="/icons/dark/icon-server-stats.png" alt="" class="menu-icon-img themed-icon" data-icon="icon-server-stats.png">Admin Panel</a>
-					<a class="header-dropdown-link" role="menuitem" href="https://stratumstats.m45core.com/" target="_blank" rel="noopener noreferrer"><img src="/icons/dark/icon-poolcensus.png" alt="" class="menu-icon-img themed-icon" data-icon="icon-poolcensus.png">StratumStats</a>
-					{{if or .GitHubURL .DiscordURL}}
-					<div class="header-dropdown-divider" role="separator" aria-hidden="true"></div>
-					{{end}}
-					{{if .GitHubURL}}
-					<a class="header-dropdown-link" role="menuitem" href="{{.GitHubURL}}" target="_blank" rel="noopener noreferrer"><img src="/icons/dark/icon-github.png" alt="" class="menu-icon-img themed-icon" data-icon="icon-github.png">GitHub</a>
-					{{end}}
-					{{if .DiscordURL}}
-					<a class="header-dropdown-link" role="menuitem" href="{{.DiscordURL}}" target="_blank" rel="noopener noreferrer"><img src="/icons/dark/icon-discord.png" alt="" class="menu-icon-img themed-icon" data-icon="icon-discord.png">Discord</a>
-					{{end}}
-				</div>
-			</div>
-			<a class="header-link worker-login-link" href="/worker"><span class="nav-icon" aria-hidden="true"><img src="/icons/light/icon-workers.png" alt="" class="nav-icon-img themed-icon" data-icon="icon-workers.png" data-icon-mode="light"></span><span class="nav-text">Workers</span></a>
-			<button class="theme-toggle" id="themeToggle" type="button" aria-label="Toggle light/dark mode" title="Toggle light/dark mode">
-				<span class="theme-toggle-icon"><img src="/icons/dark/icon-theme-dark.png" alt="" class="theme-toggle-img themed-icon" id="themeToggleIcon" data-icon-dark="icon-theme-dark.png" data-icon-light="icon-theme-light.png"></span>
+		</a>
+
+		<div class="header-dropdown">
+			<button class="header-link more-info-toggle" id="moreInfoMenuButton" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="moreInfoMenu">
+				<span class="nav-icon" aria-hidden="true"><svg class="nav-icon-img cyber-icon"><use href="#icon-menu"></use></svg></span><span class="nav-text">Navigation</span>
 			</button>
-		</nav>
+			<nav class="header-links header-dropdown-menu" id="moreInfoMenu" aria-label="Main navigation">
+				<div class="rail-section-label">Monitor</div>
+				<a class="header-dropdown-link home-link" href="/"><svg class="menu-icon-img cyber-icon" aria-hidden="true"><use href="#icon-overview"></use></svg><span>Overview</span></a>
+				<a class="header-dropdown-link worker-login-link" href="/worker"><svg class="menu-icon-img cyber-icon" aria-hidden="true"><use href="#icon-workers"></use></svg><span>My workers</span></a>
+
+				<div class="rail-section-label">Operations</div>
+				<a class="header-dropdown-link" href="/pool"><svg class="menu-icon-img cyber-icon" aria-hidden="true"><use href="#icon-pool-stats"></use></svg><span>Pool performance</span></a>
+				<a class="header-dropdown-link" href="/node"><svg class="menu-icon-img cyber-icon" aria-hidden="true"><use href="#icon-node-info"></use></svg><span>Bitcoin node</span></a>
+				<a class="header-dropdown-link" href="/server"><svg class="menu-icon-img cyber-icon" aria-hidden="true"><use href="#icon-server-stats"></use></svg><span>Host server</span></a>
+
+				<div class="rail-section-label">Learn</div>
+				<a class="header-dropdown-link" href="/help"><svg class="menu-icon-img cyber-icon" aria-hidden="true"><use href="#icon-guide"></use></svg><span>Solo mining guide</span></a>
+				<a class="header-dropdown-link" href="/umbrel"><svg class="menu-icon-img cyber-icon" aria-hidden="true"><use href="#icon-umbrel"></use></svg><span>Run on Umbrel</span></a>
+				<a class="header-dropdown-link" href="/about"><svg class="menu-icon-img cyber-icon" aria-hidden="true"><use href="#icon-about"></use></svg><span>About</span></a>
+
+				<div class="rail-section-label">Tools</div>
+				<a class="header-dropdown-link" href="/admin"><svg class="menu-icon-img cyber-icon" aria-hidden="true"><use href="#icon-admin"></use></svg><span>Admin</span></a>
+				<a class="header-dropdown-link" href="https://stratumstats.m45core.com/" target="_blank" rel="noopener noreferrer"><svg class="menu-icon-img cyber-icon" aria-hidden="true"><use href="#icon-poolcensus"></use></svg><span>StratumStats</span><span class="nav-external" aria-hidden="true">↗</span></a>
+				{{if .GitHubURL}}
+				<a class="header-dropdown-link" href="{{.GitHubURL}}" target="_blank" rel="noopener noreferrer"><svg class="menu-icon-img cyber-icon" aria-hidden="true"><use href="#icon-github"></use></svg><span>GitHub</span><span class="nav-external" aria-hidden="true">↗</span></a>
+				{{end}}
+				{{if .DiscordURL}}
+				<a class="header-dropdown-link" href="{{.DiscordURL}}" target="_blank" rel="noopener noreferrer"><svg class="menu-icon-img cyber-icon" aria-hidden="true"><use href="#icon-discord"></use></svg><span>Discord</span><span class="nav-external" aria-hidden="true">↗</span></a>
+				{{end}}
+			</nav>
+		</div>
+
+		<div class="rail-footer">
+			{{if .ListenAddr}}
+			<div class="rail-endpoint">
+				<span class="rail-endpoint-label">Stratum endpoint</span>
+				<span class="rail-endpoint-value">TCP :{{addrPort .ListenAddr}}{{if .StratumTLSListen}} <span>·</span> TLS :{{addrPort .StratumTLSListen}}{{end}}</span>
+			</div>
+			{{end}}
+			<button class="theme-toggle" id="themeToggle" type="button" aria-label="Toggle light/dark mode" title="Toggle light/dark mode">
+				<span class="theme-toggle-icon"><svg class="theme-toggle-img cyber-icon" id="themeToggleIcon" aria-hidden="true"><use href="#icon-moon"></use></svg></span>
+				<span class="theme-toggle-label">Change theme</span>
+			</button>
+		</div>
 	</div>
 </header>
 {{range .Warnings}}
@@ -67,12 +127,13 @@
 {{end}}
 
 {{define "footer"}}
-<p class="text-sm" style="margin-top:8px;color:#646b86;">
+<footer class="site-footer">
+<p class="text-sm site-footer-build">
 	<span class="mono">{{.PoolSoftware}}</span>
 	&mdash; version: <span class="mono">{{.BuildVersion}}</span>
 	&mdash; build: <span class="mono">{{.BuildTime}}</span>
 </p>
-	<div class="text-sm" style="margin-top:4px;color:#646b86;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+	<div class="text-sm site-footer-donate">
 		{{if .PoolDonationAddress}}
 		<div>
 			Donate to this pool:
@@ -80,15 +141,16 @@
 		</div>
 		{{end}}
 	</div>
-<p class="text-sm" style="margin-top:8px;color:#646b86;text-align:center;">
+<p class="text-sm site-footer-legal">
 	By connecting mining device(s) or software to this pool, you acknowledge and agree to be bound by the <a href="/terms" style="color:inherit;text-decoration:underline;">Terms of Use</a> and acknowledge that you have reviewed the <a href="/privacy" style="color:inherit;text-decoration:underline;">Privacy Policy</a> (Last Updated: February 14, 2026).
 </p>
+</footer>
 <script>
 // Theme switcher - maintains theme preference across page loads
 (function() {
 	const themeToggle = document.getElementById('themeToggle');
 	const themeIcon = document.getElementById('themeToggleIcon');
-	const themedIcons = document.querySelectorAll('.themed-icon');
+	const themeIconUse = themeIcon ? themeIcon.querySelector('use') : null;
 
 	// Get saved theme or default to dark
 	const savedTheme = localStorage.getItem('theme') || 'dark';
@@ -100,17 +162,9 @@
 		} else {
 			document.documentElement.removeAttribute('data-theme');
 		}
-		const mode = theme === 'light' ? 'light' : 'dark';
-		themedIcons.forEach(function(icon) {
-			const iconMode = icon.dataset.iconMode || mode;
-			if (icon.dataset.icon) {
-				icon.src = `/icons/${iconMode}/${icon.dataset.icon}`;
-				return;
-			}
-			if (icon.dataset.iconLight && icon.dataset.iconDark) {
-				icon.src = theme === 'light' ? `/icons/light/${icon.dataset.iconLight}` : `/icons/dark/${icon.dataset.iconDark}`;
-			}
-		});
+		if (themeIconUse) {
+			themeIconUse.setAttribute('href', theme === 'light' ? '#icon-sun' : '#icon-moon');
+		}
 	}
 
 	// Initialize theme
@@ -224,6 +278,27 @@ document.addEventListener('click', function(e) {
 
 	document.addEventListener('keydown', function(e) {
 		if (e.key === 'Escape') setOpen(false);
+	});
+
+	menu.addEventListener('click', function(e) {
+		if (e.target.closest('a')) setOpen(false);
+	});
+})();
+
+// Mark the current section in the persistent navigation.
+(function() {
+	const currentPath = window.location.pathname.replace(/\/+$/, '') || '/';
+	document.querySelectorAll('#moreInfoMenu a[href]').forEach(function(link) {
+		let url;
+		try {
+			url = new URL(link.href, window.location.origin);
+		} catch (_) {
+			return;
+		}
+		if (url.origin !== window.location.origin) return;
+		const linkPath = url.pathname.replace(/\/+$/, '') || '/';
+		const active = linkPath === '/' ? currentPath === '/' : currentPath === linkPath || currentPath.startsWith(linkPath + '/');
+		if (active) link.setAttribute('aria-current', 'page');
 	});
 })();
 </script>

@@ -287,6 +287,9 @@ Response object:
 - `api_version` (string)
 - `pool_hashrate` (number)
 - `phh` (`PoolHashrateHistoryQuantized`; optional; returned when `include_history=2`)
+- `ph24` (`CompactHashrateSeries`; optional; returned when `include_history=2`)
+  - 24-hour, one-minute pool history used by the homepage chart
+  - best-share buckets represent the largest accepted share across all workers
 - `block_height` (integer)
 - `block_difficulty` (number)
 - `block_time_left_sec` (integer; signed seconds)
@@ -310,6 +313,9 @@ Response object:
 - `h0` (number; hashrate min)
 - `h1` (number; hashrate max)
 - `hq` (array of uint16; hashrate q8 values for buckets)
+
+`CompactHashrateSeries` adds `b0`, `b1`, and `bq` for the quantized per-bucket
+best-share dots alongside the corresponding hashrate fields.
 
 Example:
 

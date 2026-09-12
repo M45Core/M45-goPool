@@ -37,7 +37,7 @@
 </head>
 <body>
 	{{template "header" .}}
-	<main class="page" id="content">
+	<main class="page overview-page" id="content">
 		<noscript>
 			<div class="card">
 				<p class="text-sm" style="color:#f88d8d;margin:0;">
@@ -156,8 +156,8 @@
 			{{template "hashrate_graph" .}}
 		</div>
 
-		<h2 id="workers">Recent work</h2>
-		<div class="card">
+		<h2 class="data-section-heading" id="workers"><span class="data-section-code">03 //</span> Recent work</h2>
+		<div class="card data-panel data-panel-activity">
 			<p class="text-sm" style="color:var(--text-muted); margin-top:0;">
 				Hashrate markers: <span class="mono">~</span> warming, <span class="mono">≈</span> settling, stable (no symbol).
 			</p>
@@ -181,8 +181,8 @@
 			</div>
 		</div>
 
-		<h2>Best shares</h2>
-		<div class="card">
+		<h2 class="data-section-heading"><span class="data-section-code">04 //</span> Best shares</h2>
+		<div class="card data-panel data-panel-shares">
 			<div style="overflow-x:auto;">
 				<table class="table" id="status-best-shares-table">
 					<thead>
@@ -202,8 +202,8 @@
 			</div>
 		</div>
 
-		<h2>Found blocks</h2>
-		<div class="card">
+		<h2 class="data-section-heading"><span class="data-section-code">05 //</span> Found blocks</h2>
+		<div class="card data-panel data-panel-blocks">
 			<div style="overflow-x:auto;">
 				<table class="table" id="status-found-blocks-table">
 					<thead>
@@ -228,14 +228,14 @@
 			</div>
 		</div>
 
-		<h2>Miner types</h2>
-		<div class="card" id="status-miner-types-card">
+		<h2 class="data-section-heading"><span class="data-section-code">06 //</span> Miner types</h2>
+		<div class="card data-panel data-panel-clients" id="status-miner-types-card">
 			<p class="text-sm" id="status-miner-types-placeholder">Loading miner type data…</p>
 			<ul class="list" id="status-miner-types-list" style="display:none;"></ul>
 		</div>
 
-		<h2>Banned workers</h2>
-		<div class="card">
+		<h2 class="data-section-heading data-section-heading-danger"><span class="data-section-code">07 //</span> Banned workers</h2>
+		<div class="card data-panel data-panel-danger">
 			<p class="text-sm" style="margin-top:0;margin-bottom:8px;color:#f88d8d;" id="status-banned-placeholder-text">
 				Loading banned worker data…
 			</p>
@@ -256,7 +256,7 @@
 			</div>
 		</div>
 
-		<div style="margin-top:16px;padding:8px;text-align:center;font-size:0.85em;color:#888;">
+		<div class="overview-refresh-status">
 			<div class="mono" id="overview-data-refreshed">Data loading...</div>
 			<div style="margin-top:4px;">
 				Rendered in <span class="mono" id="overview-render-time">--</span>

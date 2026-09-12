@@ -10,7 +10,7 @@
 </head>
 <body>
 	{{template "header" .}}
-	<main class="page" id="content">
+	<main class="page operations-page operations-node-page" id="content">
 		<noscript>
 			<div class="card">
 				<p class="text-sm" style="color:#f88d8d;margin:0;">
@@ -20,7 +20,7 @@
 		</noscript>
 		<h1>Bitcoin Node Info</h1>
 
-		<div class="card">
+		<div class="card operation-panel operation-panel-cyan" data-channel="CLIENT // 01">
 			<div class="grid">
 				<div>
 					<div class="label">Pool software</div>
@@ -30,7 +30,7 @@
 			</div>
 		</div>
 
-		<div class="card">
+		<div class="card operation-panel operation-panel-magenta" data-channel="CHAIN ID // 02">
 			<div class="label">Chain identity checks</div>
 			<div class="grid">
 				<div>
@@ -53,7 +53,7 @@
 			</div>
 		</div>
 
-		<div class="card">
+		<div class="card operation-panel operation-panel-violet" data-channel="TRANSPORT // 03">
 			<div class="grid">
 				<div>
 					<div class="label">Software</div>
@@ -80,7 +80,7 @@
 			</div>
 		</div>
 
-		<div class="card">
+		<div class="card operation-panel operation-panel-amber" data-channel="SYNC // 04">
 			<div class="label">Sync status</div>
 			<div class="grid">
 				<div>
@@ -106,7 +106,7 @@
 			</div>
 		</div>
 
-		<div class="card" style="margin-top:16px;">
+		<div class="card operation-panel operation-panel-cyan operation-peer-panel" data-channel="PEER MESH // 05" style="margin-top:16px;">
 			<div class="label">Node peers</div>
 			<div class="peer-controls">
 				<label for="node-peer-sort">Sort by</label>
@@ -128,7 +128,7 @@
 			</div>
 		</div>
 
-		<div style="margin-top:16px;padding:8px;text-align:center;font-size:0.85em;color:#888;">
+		<div class="operation-refresh-status" style="margin-top:16px;padding:8px;text-align:center;font-size:0.85em;color:#888;">
 			<div class="mono" id="node-data-refreshed">Data loading...</div>
 		</div>
 

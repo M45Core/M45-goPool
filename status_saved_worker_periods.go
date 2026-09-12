@@ -174,6 +174,11 @@ func (s *StatusServer) recordSavedOnlineWorkerPeriods(allWorkers []WorkerView, n
 		poolRing.bestDifficultyQ[poolIdx] = 0
 	}
 	poolRing.hashrateQ[poolIdx] = encodeHashrateSI16(poolHashrate)
+	poolBestQ := uint16(0)
+	if s.metrics != nil {
+		poolBestQ = s.metrics.poolMinuteBestDifficultyQ(sampleBucket)
+	}
+	poolRing.bestDifficultyQ[poolIdx] = poolBestQ
 	poolRing.lastMinute = sampleMinute
 
 	if len(onlineSaved) == 0 {
@@ -181,13 +186,14 @@ func (s *StatusServer) recordSavedOnlineWorkerPeriods(allWorkers []WorkerView, n
 		return
 	}
 
-	var poolBestQ uint16
 	for hash := range onlineSaved {
 		hashrateQ := encodeHashrateSI16(hashrateByHash[hash])
 		bestQ := uint16(0)
 		if s.workerLists != nil {
 			bestQ = encodeBestShareSI16(s.workerLists.ConsumeSavedWorkerMinuteBestDifficulty(hash, sampleBucket))
 		}
+		// Retain the saved-worker observation as a harmless fallback for startup
+		// and sampler races; the lock-free pool value normally already includes it.
 		if bestQ > poolBestQ {
 			poolBestQ = bestQ
 		}
@@ -211,9 +217,7 @@ func (s *StatusServer) recordSavedOnlineWorkerPeriods(allWorkers []WorkerView, n
 		}
 		ring.lastMinute = sampleMinute
 	}
-	if poolBestQ > poolRing.bestDifficultyQ[poolIdx] {
-		poolRing.bestDifficultyQ[poolIdx] = poolBestQ
-	}
+	poolRing.bestDifficultyQ[poolIdx] = poolBestQ
 	s.pruneSavedWorkerPeriodsLocked(currentMinute)
 }
 

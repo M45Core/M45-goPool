@@ -10,7 +10,7 @@
 </head>
 <body>
 	{{template "header" .}}
-	<main class="page" id="content">
+	<main class="page operations-page operations-pool-page" id="content">
 		<noscript>
 			<div class="card">
 				<p class="text-sm" style="color:#f88d8d;margin:0;">
@@ -19,7 +19,7 @@
 			</div>
 		</noscript>
 		<h1>Pool Stats</h1>
-		<div class="card">
+		<div class="card operation-panel operation-panel-cyan" data-channel="IDENTITY // 01">
 			<div class="label">Identity</div>
 			<div class="grid">
 				<div>
@@ -55,7 +55,7 @@
 			</div>
 		</div>
 
-		<div class="card">
+		<div class="card operation-panel operation-panel-magenta" data-channel="INGRESS // 02">
 			<div class="label">Connection limits</div>
 			<div class="grid">
 				<div>
@@ -79,7 +79,7 @@
 			</div>
 		</div>
 
-		<div class="card">
+		<div class="card operation-panel operation-panel-violet" data-channel="CONSENSUS // 03">
 			<div class="label">Difficulty settings</div>
 			<div class="grid">
 				<div>
@@ -107,39 +107,39 @@
 			</div>
 		</div>
 
-		<div class="card">
+		<div class="card operation-panel operation-panel-amber" data-channel="TELEMETRY // 04">
 			<div class="label">Pool metrics (since start)</div>
 			<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-top:8px;">
 				<div>
 					<div class="label">Block submissions</div>
-					<div class="mono" id="pool-block-submissions">--</div>
+					<div class="mono operation-data-list" id="pool-block-submissions">--</div>
 				</div>
 				<div>
 					<div class="label">RPC getblocktemplate latency</div>
-					<div class="mono" id="pool-rpc-gbt">--</div>
+					<div class="mono operation-data-list" id="pool-rpc-gbt">--</div>
 				</div>
 				<div>
 					<div class="label">RPC submitblock latency</div>
-					<div class="mono" id="pool-rpc-submit">--</div>
+					<div class="mono operation-data-list" id="pool-rpc-submit">--</div>
 				</div>
 				<div>
 					<div class="label">Error counters</div>
-					<div class="mono" id="pool-error-counters">--</div>
+					<div class="mono operation-data-list" id="pool-error-counters">--</div>
 				</div>
 			</div>
 		</div>
 
-		<div class="card">
+		<div class="card operation-panel operation-panel-danger" data-channel="FAULT LOG // 05">
 			<div class="label">Recent errors</div>
-			<div class="mono" id="pool-error-history">--</div>
+			<div class="mono operation-event-list" id="pool-error-history">--</div>
 		</div>
 
-		<div class="card">
+		<div class="card operation-panel operation-panel-magenta" data-channel="PROTECTION // 06">
 			<div class="label">Stratum safeguard disconnects (node health)</div>
-			<div class="mono" id="pool-safeguard-disconnect-events">--</div>
+			<div class="mono operation-event-list" id="pool-safeguard-disconnect-events">--</div>
 		</div>
 
-		<div style="margin-top:16px;padding:8px;text-align:center;font-size:0.85em;color:#888;">
+		<div class="operation-refresh-status" style="margin-top:16px;padding:8px;text-align:center;font-size:0.85em;color:#888;">
 			<div class="mono" id="pool-data-refreshed">Data loading...</div>
 		</div>
 
@@ -194,20 +194,53 @@
 			return `${Math.floor(days / 365)}y ago`;
 		}
 
+		function renderOperationRows(element, rows) {
+			if (!element) return;
+			element.replaceChildren();
+			element.setAttribute('role', 'list');
+			rows.forEach((entry) => {
+				const row = document.createElement('div');
+				row.className = `operation-data-row${entry.tone ? ` operation-data-row-${entry.tone}` : ''}`;
+				row.setAttribute('role', 'listitem');
+				const key = document.createElement('span');
+				key.className = 'operation-data-key';
+				key.textContent = entry.label;
+				const value = document.createElement('strong');
+				value.className = 'operation-data-value';
+				value.textContent = entry.value;
+				row.append(key, value);
+				element.appendChild(row);
+			});
+		}
+
 		function renderErrorHistory(errors) {
 			if (!errorHistoryEl) return;
 			if (!errors || errors.length === 0) {
-				errorHistoryEl.textContent = 'No recent errors';
+				errorHistoryEl.replaceChildren();
+				const empty = document.createElement('div');
+				empty.className = 'operation-event-empty';
+				empty.textContent = 'No recent errors';
+				errorHistoryEl.appendChild(empty);
 				return;
 			}
 			errorHistoryEl.replaceChildren();
 			const ordered = errors.slice().reverse();
 			ordered.forEach((entry) => {
 				const line = document.createElement('div');
+				line.className = 'operation-event-row';
 				const stamp = formatTimeAgo(entry.at);
 				const kind = entry.type || 'error';
 				const message = entry.message || 'unspecified';
-				line.textContent = `${stamp}  ${kind}: ${message}`;
+				const stampEl = document.createElement('span');
+				stampEl.className = 'operation-event-time';
+				stampEl.textContent = stamp;
+				const kindEl = document.createElement('span');
+				kindEl.className = 'operation-event-kind';
+				kindEl.textContent = kind;
+				const messageEl = document.createElement('span');
+				messageEl.className = 'operation-event-message';
+				messageEl.textContent = message;
+				line.append(stampEl, kindEl, messageEl);
 				errorHistoryEl.appendChild(line);
 			});
 		}
@@ -217,10 +250,16 @@
 			safeguardDisconnectsEl.replaceChildren();
 			const total = Number.isFinite(Number(count)) ? Number(count) : 0;
 			const header = document.createElement('div');
-			header.textContent = `count: ${total}`;
+			header.className = 'operation-event-summary';
+			const headerLabel = document.createElement('span');
+			headerLabel.textContent = 'Total disconnects';
+			const totalEl = document.createElement('strong');
+			totalEl.textContent = String(total);
+			header.append(headerLabel, totalEl);
 			safeguardDisconnectsEl.appendChild(header);
 			if (!events || events.length === 0) {
 				const line = document.createElement('div');
+				line.className = 'operation-event-empty';
 				line.textContent = 'No recorded events';
 				safeguardDisconnectsEl.appendChild(line);
 				return;
@@ -228,28 +267,51 @@
 			const ordered = events.slice().reverse();
 			ordered.forEach((entry) => {
 				const line = document.createElement('div');
+				line.className = 'operation-event-row operation-event-row-safeguard';
 				const when = formatTimeAgo(entry.at);
 				const disconnected = Number(entry.disconnected || 0);
 				const reason = entry.reason || 'node updates degraded';
-				line.textContent = `${when}  disconnected=${disconnected}  ${reason}`;
+				const timeEl = document.createElement('span');
+				timeEl.className = 'operation-event-time';
+				timeEl.textContent = when;
+				const countEl = document.createElement('span');
+				countEl.className = 'operation-event-kind';
+				countEl.textContent = `${disconnected} disconnected`;
+				const reasonEl = document.createElement('span');
+				reasonEl.className = 'operation-event-message';
+				reasonEl.textContent = reason;
+				line.append(timeEl, countEl, reasonEl);
 				safeguardDisconnectsEl.appendChild(line);
 			});
 		}
 
 		function updatePoolMetrics(data, updatedAt) {
 			if (!data) return;
-			if (blockSubEl) {
-				blockSubEl.textContent = `accepted: ${data.blocks_accepted || 0}   errors: ${data.blocks_errored || 0}`;
-			}
-			if (rpcGBTEl) {
-				rpcGBTEl.innerHTML = `1h full RPC min: ${formatMilliseconds(data.rpc_gbt_min_1h_sec)}<br>1h full RPC avg: ${formatMilliseconds(data.rpc_gbt_avg_1h_sec)}<br>1h full RPC max: ${formatMilliseconds(data.rpc_gbt_max_1h_sec)}<br>latest request to headers: ${formatMilliseconds(data.rpc_gbt_headers_last_sec)}<br>latest body read: ${formatMilliseconds(data.rpc_gbt_body_last_sec)}<br>latest JSON decode: ${formatMilliseconds(data.rpc_gbt_decode_last_sec)}<br>latest template to notify: ${formatMilliseconds(data.rpc_gbt_apply_notify_last_sec)}<br>template to notify max: ${formatMilliseconds(data.rpc_gbt_apply_notify_max_sec)}<br>RPC calls: ${data.rpc_gbt_count || 0}, job notifies: ${data.rpc_gbt_apply_notify_count || 0}`;
-			}
-			if (rpcSubmitEl) {
-				rpcSubmitEl.innerHTML = `last: ${formatMilliseconds(data.rpc_submit_last_sec)}<br>max: ${formatMilliseconds(data.rpc_submit_max_sec)}<br>calls: ${data.rpc_submit_count || 0}`;
-			}
-			if (errorCountersEl) {
-				errorCountersEl.innerHTML = `RPC errors: ${data.rpc_errors || 0}<br>Share errors: ${data.share_errors || 0}<br>Node safeguard disconnects: ${data.stratum_safeguard_disconnect_count || 0}`;
-			}
+			renderOperationRows(blockSubEl, [
+				{ label: 'Accepted', value: String(data.blocks_accepted || 0), tone: 'good' },
+				{ label: 'Errors', value: String(data.blocks_errored || 0), tone: 'danger' },
+			]);
+			renderOperationRows(rpcGBTEl, [
+				{ label: '1h full RPC min', value: formatMilliseconds(data.rpc_gbt_min_1h_sec) },
+				{ label: '1h full RPC avg', value: formatMilliseconds(data.rpc_gbt_avg_1h_sec) },
+				{ label: '1h full RPC max', value: formatMilliseconds(data.rpc_gbt_max_1h_sec) },
+				{ label: 'Request to headers', value: formatMilliseconds(data.rpc_gbt_headers_last_sec) },
+				{ label: 'Body read', value: formatMilliseconds(data.rpc_gbt_body_last_sec) },
+				{ label: 'JSON decode', value: formatMilliseconds(data.rpc_gbt_decode_last_sec) },
+				{ label: 'Template to notify', value: formatMilliseconds(data.rpc_gbt_apply_notify_last_sec) },
+				{ label: 'Notify maximum', value: formatMilliseconds(data.rpc_gbt_apply_notify_max_sec) },
+				{ label: 'RPC calls / job notifies', value: `${data.rpc_gbt_count || 0} / ${data.rpc_gbt_apply_notify_count || 0}` },
+			]);
+			renderOperationRows(rpcSubmitEl, [
+				{ label: 'Latest', value: formatMilliseconds(data.rpc_submit_last_sec) },
+				{ label: 'Maximum', value: formatMilliseconds(data.rpc_submit_max_sec) },
+				{ label: 'Calls', value: String(data.rpc_submit_count || 0) },
+			]);
+			renderOperationRows(errorCountersEl, [
+				{ label: 'RPC errors', value: String(data.rpc_errors || 0), tone: 'danger' },
+				{ label: 'Share errors', value: String(data.share_errors || 0), tone: 'danger' },
+				{ label: 'Safeguard disconnects', value: String(data.stratum_safeguard_disconnect_count || 0), tone: 'warning' },
+			]);
 			renderErrorHistory(data.error_history);
 			renderSafeguardDisconnects(data.stratum_safeguard_disconnect_count, data.stratum_safeguard_disconnects);
 			if (dataRefreshedEl && updatedAt) {

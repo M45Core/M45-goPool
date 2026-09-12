@@ -13,6 +13,7 @@ import (
 )
 
 const defaultBestShareLimit = 12
+const poolMinuteBestSlots = 8
 const poolErrorHistorySize = 6
 const rpcGBTRollingWindowSeconds = 24 * 60 * 60
 const shareRateWindowSeconds = 60
@@ -76,6 +77,10 @@ type PoolMetrics struct {
 	bestShareCount int
 	bestSharesMu   sync.RWMutex
 	bestShareChan  chan BestShare
+	// poolMinuteBest keeps the all-worker maximum share difficulty for a few
+	// recent UTC minutes. Packing the minute and positive float32 bits into one
+	// atomic makes accepted-share updates allocation-free and lock-free.
+	poolMinuteBest [poolMinuteBestSlots]atomic.Uint64
 
 	// Simple RPC latency summaries for diagnostics (seconds).
 	rpcGBTLast             float64
@@ -669,7 +674,8 @@ func (m *PoolMetrics) SnapshotBestShares() []BestShare {
 	return out
 }
 
-// TrackBestShare normalizes a share entry and records it if it ranks in the top N.
+// TrackBestShare observes every accepted share for the homepage minute chart,
+// then normalizes and records the share if it ranks in the all-time top N.
 func (m *PoolMetrics) TrackBestShare(worker, hash string, difficulty float64, timestamp time.Time) {
 	if m == nil {
 		return
@@ -677,6 +683,7 @@ func (m *PoolMetrics) TrackBestShare(worker, hash string, difficulty float64, ti
 	if difficulty <= 0 {
 		return
 	}
+	m.observePoolMinuteBestDifficulty(difficulty, timestamp)
 
 	m.bestSharesMu.RLock()
 	count := m.bestShareCount
@@ -709,6 +716,66 @@ func (m *PoolMetrics) TrackBestShare(worker, hash string, difficulty float64, ti
 		return
 	}
 	m.recordBestShare(share)
+}
+
+// observePoolMinuteBestDifficulty records an accepted share in the bounded
+// all-worker minute ring used by the homepage chart. Positive IEEE-754 bits are
+// monotonic, so a single CAS loop can retain the largest value for the minute.
+func (m *PoolMetrics) observePoolMinuteBestDifficulty(difficulty float64, at time.Time) {
+	if m == nil || !(difficulty > 0) {
+		return
+	}
+	minute, ok := poolMinuteBestUnixMinute(at)
+	if !ok {
+		return
+	}
+	bestBits := math.Float32bits(float32(difficulty))
+	if bestBits == 0 {
+		return
+	}
+
+	slot := &m.poolMinuteBest[minute%poolMinuteBestSlots]
+	for {
+		previous := slot.Load()
+		previousMinute := uint32(previous >> 32)
+		previousBestBits := uint32(previous)
+		if previousMinute == minute && previousBestBits >= bestBits {
+			return
+		}
+		next := uint64(minute)<<32 | uint64(bestBits)
+		if slot.CompareAndSwap(previous, next) {
+			return
+		}
+	}
+}
+
+// poolMinuteBestDifficultyQ returns the completed value for one exact UTC
+// minute. A minute mismatch means the bounded ring has no sample for it.
+func (m *PoolMetrics) poolMinuteBestDifficultyQ(at time.Time) uint16 {
+	if m == nil {
+		return 0
+	}
+	minute, ok := poolMinuteBestUnixMinute(at)
+	if !ok {
+		return 0
+	}
+	packed := m.poolMinuteBest[minute%poolMinuteBestSlots].Load()
+	if uint32(packed>>32) != minute {
+		return 0
+	}
+	return encodeBestShareSI16(float64(math.Float32frombits(uint32(packed))))
+}
+
+func poolMinuteBestUnixMinute(at time.Time) (uint32, bool) {
+	unixSeconds := at.UTC().Unix()
+	if unixSeconds < 0 {
+		return 0, false
+	}
+	minute := uint64(unixSeconds) / uint64(time.Minute/time.Second)
+	if minute > uint64(^uint32(0)) {
+		return 0, false
+	}
+	return uint32(minute), true
 }
 
 func (m *PoolMetrics) bestShareWorker() {

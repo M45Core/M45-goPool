@@ -80,28 +80,28 @@
 
 	function savedWorkersGraphLabelColor() {
 		const isLight = document.documentElement && document.documentElement.getAttribute('data-theme') === 'light';
-		return isLight ? '#4b5568' : '#b3bbd4';
+		return isLight ? '#36535d' : '#93aab5';
 	}
 
 	function savedWorkersGraphTickColor() {
 		const isLight = document.documentElement && document.documentElement.getAttribute('data-theme') === 'light';
-		return isLight ? 'rgba(75, 85, 104, 0.52)' : 'rgba(179, 187, 212, 0.46)';
+		return isLight ? 'rgba(54, 83, 93, 0.42)' : 'rgba(24, 48, 65, 0.72)';
 	}
 
 	function savedWorkersGraphAccentColor() {
 		const isLight = document.documentElement && document.documentElement.getAttribute('data-theme') === 'light';
-		return isLight ? '#2e5c8a' : '#2cf1c2';
+		return isLight ? '#007f87' : '#29f5e8';
 	}
 
 	function savedWorkersGraphAmberColor() {
 		const isLight = document.documentElement && document.documentElement.getAttribute('data-theme') === 'light';
-		return isLight ? '#8a5200' : '#f6b34a';
+		return isLight ? '#b8166d' : '#ff42a8';
 	}
 
 	function hexToRGBA(hex, alpha) {
 		const normalized = String(hex || '').trim().replace(/^#/, '');
 		const a = Math.max(0, Math.min(1, Number(alpha)));
-		if (!/^[0-9a-fA-F]{6}$/.test(normalized)) return `rgba(44, 241, 194, ${a})`;
+		if (!/^[0-9a-fA-F]{6}$/.test(normalized)) return `rgba(41, 245, 232, ${a})`;
 		const r = parseInt(normalized.slice(0, 2), 16);
 		const g = parseInt(normalized.slice(2, 4), 16);
 		const b = parseInt(normalized.slice(4, 6), 16);
