@@ -6638,3 +6638,169 @@ body.saved-workers-page-body .worker-graphs-dialog {
 		transition: none;
 	}
 }
+
+/* Keep the console identity, but use one shared interface accent.
+ * Amber, red, and green remain reserved for meaningful status signals. */
+:root {
+	--ui-accent: var(--spectrum-cyan);
+	--ui-accent-fade: rgba(41, 245, 232, 0.075);
+	--ui-secondary: var(--spectrum-magenta);
+	--ui-secondary-fade: rgba(255, 66, 168, 0.07);
+}
+
+[data-theme="light"] {
+	--ui-accent: var(--spectrum-cyan);
+	--ui-accent-fade: rgba(0, 127, 135, 0.075);
+	--ui-secondary: var(--spectrum-magenta);
+	--ui-secondary-fade: rgba(184, 22, 109, 0.07);
+}
+
+body,
+body.saved-workers-page-body {
+	background-image:
+		radial-gradient(circle at 11% -5%, var(--ui-accent-fade), transparent 30rem),
+		radial-gradient(circle at 92% 8%, var(--ui-secondary-fade), transparent 28rem),
+		linear-gradient(180deg, var(--bg-gradient-start), var(--bg-gradient-end) 68%);
+}
+
+header.site-rail,
+[data-theme="light"] header.site-rail {
+	background:
+		radial-gradient(circle at 18% 2%, var(--ui-accent-fade), transparent 13rem),
+		radial-gradient(circle at 110% 40%, var(--ui-secondary-fade), transparent 15rem),
+		linear-gradient(180deg, var(--header-bg), var(--bg-gradient-end));
+}
+
+.brand-title::after,
+.rail-section-label {
+	color: var(--ui-secondary);
+	text-shadow: none;
+}
+
+.page .card,
+.page .card:nth-of-type(4n + 3),
+.page .card:nth-of-type(4n),
+.page .status-grid .card:nth-child(4n + 1),
+.page .status-grid .card:nth-child(4n + 2),
+.page .status-grid .card:nth-child(4n + 3),
+.page .status-grid .card:nth-child(4n) {
+	--panel-accent: var(--ui-accent);
+	--panel-fade: var(--ui-accent-fade);
+	--panel-border: color-mix(in srgb, var(--ui-accent) 30%, transparent);
+}
+
+.page .card:nth-of-type(4n + 2) {
+	--panel-accent: var(--ui-secondary);
+	--panel-fade: var(--ui-secondary-fade);
+	--panel-border: color-mix(in srgb, var(--ui-secondary) 30%, transparent);
+}
+
+.page .card > .grid:not(.status-grid):not(.admin-grid) > div:hover,
+.page .table tbody tr:hover,
+.page .table tbody tr:hover td {
+	background: linear-gradient(112deg, var(--ui-accent-fade), transparent 70%), var(--surface-inner);
+}
+
+.operation-panel:not(.operation-panel-danger),
+.operation-panel-magenta,
+.operation-panel-violet,
+.operation-panel-amber {
+	--channel: var(--ui-accent);
+	--channel-fade: var(--ui-accent-fade);
+}
+
+.operation-panel::after,
+body.saved-workers-page-body .saved-workers-command-panel::after {
+	background: linear-gradient(90deg, var(--channel), transparent);
+}
+
+body.saved-workers-page-body .saved-workers-add-panel,
+body.saved-workers-page-body .saved-workers-discovery-panel,
+body.saved-workers-page-body .saved-workers-options-panel,
+body.saved-workers-page-body .saved-workers-blocks-panel,
+body.saved-workers-page-body .saved-workers-auth-panel {
+	--channel: var(--ui-accent);
+	--channel-fade: var(--ui-accent-fade);
+}
+
+body.saved-workers-page-body .saved-workers-online-row .saved-workers-online-block.top {
+	--rig-channel: var(--ui-accent);
+	--rig-fade: var(--ui-accent-fade);
+	border-color: color-mix(in srgb, var(--ui-accent) 34%, transparent);
+}
+
+body.saved-workers-page-body .saved-workers-masthead {
+	box-shadow: 0 0 32px var(--ui-accent-fade), 0 0 62px var(--ui-secondary-fade);
+}
+
+body.saved-workers-page-body .saved-workers-masthead::before {
+	background: linear-gradient(90deg, var(--ui-accent), var(--ui-secondary), var(--ui-accent));
+	box-shadow: 0 0 12px var(--ui-accent), 0 0 22px var(--ui-secondary);
+}
+
+body.saved-workers-page-body .saved-workers-kicker,
+body.saved-workers-page-body .saved-workers-sort {
+	color: var(--ui-accent);
+	border-color: color-mix(in srgb, var(--ui-accent) 32%, transparent);
+	border-left-color: var(--ui-accent);
+}
+
+body.saved-workers-page-body .saved-workers-sort,
+body.saved-workers-page-body .saved-workers-top-badge,
+body.saved-workers-page-body .saved-workers-top-badge:nth-child(2) {
+	background: linear-gradient(110deg, var(--ui-accent-fade), transparent);
+	border-color: color-mix(in srgb, var(--ui-accent) 34%, transparent);
+	color: var(--ui-accent);
+}
+
+body.saved-workers-page-body .saved-workers-top-badge:nth-child(3) {
+	background: linear-gradient(110deg, var(--ui-secondary-fade), transparent);
+	border-color: color-mix(in srgb, var(--ui-secondary) 34%, transparent);
+	color: var(--ui-secondary);
+}
+
+/* Keep the full desktop navigation visible on common 1080p displays. */
+.brand-mark,
+.brand-logo {
+	width: 128px;
+	height: 128px;
+}
+
+.brand-mark {
+	flex-basis: 128px;
+}
+
+@media (max-height: 1100px) and (min-width: 901px) {
+	.site-rail .header-inner {
+		padding: 18px 16px 12px;
+		gap: 14px;
+	}
+
+	.site-rail .brand {
+		padding-bottom: 12px;
+		gap: 8px;
+	}
+
+	.brand-mark,
+	.brand-logo {
+		width: 92px;
+		height: 92px;
+	}
+
+	.brand-mark {
+		flex-basis: 92px;
+	}
+
+	.rail-section-label {
+		margin-top: 12px;
+	}
+
+	.site-rail .header-dropdown-link {
+		min-height: 36px;
+		padding-block: 7px;
+	}
+
+	.rail-footer {
+		padding-top: 10px;
+	}
+}
