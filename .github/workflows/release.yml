@@ -49,7 +49,7 @@ jobs:
     needs: release
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       packages: write
     concurrency:
       group: gopool-image-${{ github.ref }}-${{ inputs.tag }}
@@ -60,7 +60,9 @@ jobs:
         with:
           path: release-tools
           persist-credentials: false
-          sparse-checkout: .dockerignore
+          sparse-checkout: |
+            .dockerignore
+            .github/release-tools/capture-umbrel-gallery.mjs
           sparse-checkout-cone-mode: false
 
       - name: Check out tagged source
@@ -154,6 +156,74 @@ jobs:
             exit 1
           fi
 
+      - name: Capture current Umbrel gallery image
+        id: gallery
+        env:
+          GH_TOKEN: ${{ github.token }}
+          IMAGE_NAME: ${{ steps.image.outputs.name }}
+          IMAGE_DIGEST: ${{ steps.build.outputs.digest }}
+        shell: bash
+        run: |
+          runtime_data="${RUNNER_TEMP}/gopool-gallery-data"
+          screenshot="${RUNNER_TEMP}/umbrel-dashboard.png"
+          container_name="gopool-gallery-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          mkdir -p "${runtime_data}/config"
+          cp source/data/config/examples/config.toml.example "${runtime_data}/config/config.toml"
+          sed -i \
+            -e 's|YOUR_POOL_WALLET_ADDRESS_HERE|3B86bWqfjdQeLEr8nkeeWU6ygksc2K7MoL|' \
+            -e 's|status_brand_name = ""|status_brand_name = "M45 goPool"|' \
+            -e 's|status_brand_domain = ""|status_brand_domain = "Umbrel Home Mining"|' \
+            -e 's|stratum_tls_listen = ":4333"|stratum_tls_listen = ""|' \
+            "${runtime_data}/config/config.toml"
+
+          image_ref="${IMAGE_NAME}:${RELEASE_TAG}@${IMAGE_DIGEST}"
+          docker pull "${image_ref}"
+          docker run --detach \
+            --name "${container_name}" \
+            --publish 127.0.0.1:18080:18080 \
+            --volume "${runtime_data}:/app/data" \
+            "${image_ref}" \
+            -stdout \
+            -pool-log=/dev/null \
+            -network=mainnet \
+            -rpc-url=http://127.0.0.1:18443 \
+            -listen=:13333 \
+            -stratum-tls=off \
+            -status=:18080 \
+            -status-tls=off
+          cleanup() {
+            docker rm --force "${container_name}" >/dev/null 2>&1 || true
+          }
+          trap cleanup EXIT
+
+          ready=false
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:18080/ >/dev/null; then
+              ready=true
+              break
+            fi
+            sleep 1
+          done
+          if [[ "${ready}" != "true" ]]; then
+            docker logs "${container_name}" >&2
+            echo "goPool did not become ready for its release screenshot." >&2
+            exit 1
+          fi
+
+          npm install --prefix release-tools --no-save --ignore-scripts playwright@1.55.0
+          release-tools/node_modules/.bin/playwright install --with-deps chromium
+          GOPOOL_SCREENSHOT_URL=http://127.0.0.1:18080/ \
+          GOPOOL_SCREENSHOT_PATH="${screenshot}" \
+            node release-tools/.github/release-tools/capture-umbrel-gallery.mjs
+          test -s "${screenshot}"
+          file "${screenshot}"
+          gh release upload "${RELEASE_TAG}" \
+            "${screenshot}#M45 goPool Umbrel dashboard" \
+            --repo "${GITHUB_REPOSITORY}" \
+            --clobber
+          gallery_url="https://github.com/${GITHUB_REPOSITORY}/releases/download/${RELEASE_TAG}/umbrel-dashboard.png"
+          echo "url=${gallery_url}" >> "${GITHUB_OUTPUT}"
+
       - name: Verify community-store dispatch token
         env:
           UMBREL_STORE_TOKEN: ${{ secrets.UMBREL_STORE_TOKEN }}
@@ -176,7 +246,8 @@ jobs:
             --arg image "${IMAGE_NAME}" \
             --arg digest "${IMAGE_DIGEST}" \
             --arg umbrel_version "${{ steps.image.outputs.umbrel_version }}" \
-            '{event_type: "gopool-release", client_payload: {tag: $tag, image: $image, digest: $digest, umbrel_version: $umbrel_version}}' \
+            --arg gallery_url "${{ steps.gallery.outputs.url }}" \
+            '{event_type: "gopool-release", client_payload: {tag: $tag, image: $image, digest: $digest, umbrel_version: $umbrel_version, gallery_url: $gallery_url}}' \
             | gh api \
                 --method POST \
                 "repos/${UMBREL_STORE_REPOSITORY}/dispatches" \

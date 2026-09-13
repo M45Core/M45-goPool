@@ -149,7 +149,9 @@ troubleshooting, visit [m45core.com/umbrel](https://m45core.com/umbrel).
 
 Tagged releases are published automatically for both `linux/amd64` and
 `linux/arm64`. The release workflow pushes an immutable versioned image to
-GitHub Container Registry, then dispatches its multi-platform digest to the
+GitHub Container Registry, starts that exact image with deterministic demo
+metrics, captures its current dashboard template and CSS for the Umbrel gallery,
+then dispatches the image digest and screenshot URL to the
 [M45Core Umbrel Community App Store](https://github.com/M45Core/M45-Umbrel-Community-App-Store).
 The store verifies the source tag and image before committing its own app
 version, release notes, and digest pin. This remains a community-store release;
