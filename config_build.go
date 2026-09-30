@@ -9,7 +9,7 @@ func buildBaseFileConfig(cfg Config) baseFileConfig {
 	return baseFileConfig{
 		Server: serverConfig{
 			PoolListen:      cfg.ListenAddr,
-			StatusListen:    cfg.StatusAddr,
+			StatusListen:    &cfg.StatusAddr,
 			StatusTLSListen: &cfg.StatusTLSAddr,
 			StatusPublicURL: cfg.StatusPublicURL,
 		},

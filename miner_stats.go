@@ -227,35 +227,43 @@ func (mc *MinerConn) recordShare(worker string, accepted bool, creditedDiff floa
 		timestamp:    now,
 	}
 
-	queued, closed := mc.queueStatsUpdate(update)
-	if closed {
-		return
-	}
-	if !queued {
-		mc.recordShareSync(update)
-	}
+	mc.recordShareStats(update)
 
+	// A queued submission can finish after its miner disconnects. Keep its
+	// outcome in pool totals even when connection-local stats have stopped.
 	if mc.metrics != nil {
 		mc.metrics.RecordShare(accepted, reason)
 	}
 }
 
-func (mc *MinerConn) queueStatsUpdate(update statsUpdate) (queued bool, closed bool) {
-	if mc.statsUpdates == nil {
-		return false, false
+func (mc *MinerConn) recordShareStats(update statsUpdate) {
+	mc.statsUpdatesMu.RLock()
+	defer mc.statsUpdatesMu.RUnlock()
+	if mc.statsUpdatesClosed {
+		return
 	}
-	defer func() {
-		if recover() != nil {
-			queued = false
-			closed = true
+	if mc.statsUpdates != nil {
+		select {
+		case mc.statsUpdates <- update:
+			return
+		default:
 		}
-	}()
-	select {
-	case mc.statsUpdates <- update:
-		return true, false
-	default:
-		return false, false
 	}
+	// Keep the lifecycle lock through the fallback so cleanup cannot remove
+	// the hashrate and then have a synchronous update restore it.
+	mc.recordShareSync(update)
+}
+
+func (mc *MinerConn) closeStatsUpdates() {
+	mc.statsUpdatesMu.Lock()
+	if !mc.statsUpdatesClosed {
+		mc.statsUpdatesClosed = true
+		if mc.statsUpdates != nil {
+			close(mc.statsUpdates)
+		}
+	}
+	mc.statsUpdatesMu.Unlock()
+	mc.statsWg.Wait()
 }
 
 // recordShareSync is the fallback synchronous stats update (only when channel is full)

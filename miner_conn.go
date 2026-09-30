@@ -32,13 +32,10 @@ func (mc *MinerConn) cleanupResources() {
 	}
 	mc.unregisterRegisteredWorker()
 
-	// Close stats channel and wait for worker to finish processing.
-	// Some tests build lightweight MinerConn instances without a stats
-	// worker/channel; guard those cases.
-	if mc.statsUpdates != nil {
-		close(mc.statsUpdates)
-		mc.statsWg.Wait()
-	}
+	// Stop connection-local updates and drain accepted stats writes before
+	// removing this connection's hashrate. Submission workers can still finish
+	// queued shares afterward; their outcomes remain in global pool metrics.
+	mc.closeStatsUpdates()
 
 	if mc.metrics != nil {
 		if connSeq := atomic.LoadUint64(&mc.connectionSeq); connSeq != 0 {

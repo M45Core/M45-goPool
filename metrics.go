@@ -325,8 +325,8 @@ func (m *PoolMetrics) SnapshotShareRates(now time.Time) (sharesPerSecond float64
 	cutoff := now.Unix() - (shareRateWindowSeconds - 1)
 
 	m.mu.RLock()
+	defer m.mu.RUnlock()
 	buckets := m.shareRateBuckets
-	m.mu.RUnlock()
 	if len(buckets) == 0 {
 		return 0, 0
 	}

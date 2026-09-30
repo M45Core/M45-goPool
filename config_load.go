@@ -211,8 +211,8 @@ func applyBaseConfig(cfg *Config, fc baseFileConfigRead) (configChanged bool, mi
 	if fc.Server.PoolListen != "" {
 		cfg.ListenAddr = fc.Server.PoolListen
 	}
-	if fc.Server.StatusListen != "" {
-		cfg.StatusAddr = fc.Server.StatusListen
+	if fc.Server.StatusListen != nil {
+		cfg.StatusAddr = *fc.Server.StatusListen
 	}
 	if fc.Server.StatusTLSListen != nil {
 		cfg.StatusTLSAddr = *fc.Server.StatusTLSListen

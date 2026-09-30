@@ -2,7 +2,7 @@ package main
 
 type serverConfig struct {
 	PoolListen      string  `toml:"pool_listen"`
-	StatusListen    string  `toml:"status_listen"`
+	StatusListen    *string `toml:"status_listen"`     // nil = default, "" = disabled
 	StatusTLSListen *string `toml:"status_tls_listen"` // nil = default, "" = disabled
 	StatusPublicURL string  `toml:"status_public_url"`
 }

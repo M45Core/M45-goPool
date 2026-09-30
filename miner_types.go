@@ -156,7 +156,9 @@ type MinerConn struct {
 	statsMu              sync.Mutex
 	initWorkMu           sync.Mutex
 	statsUpdates         chan statsUpdate // Buffered channel for async stats updates
-	statsWg              sync.WaitGroup   // Wait for stats worker to finish
+	statsUpdatesMu       sync.RWMutex     // Serializes stats sends/fallbacks with closure
+	statsUpdatesClosed   bool
+	statsWg              sync.WaitGroup // Wait for stats worker to finish
 	vardiff              VarDiffConfig
 	metrics              *PoolMetrics
 	accounting           *AccountStore

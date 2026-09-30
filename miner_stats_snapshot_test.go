@@ -62,7 +62,7 @@ func TestRecordShareDropsWhenStatsChannelClosed(t *testing.T) {
 	mc := &MinerConn{
 		statsUpdates: make(chan statsUpdate),
 	}
-	close(mc.statsUpdates)
+	mc.closeStatsUpdates()
 
 	mc.recordShare("worker", true, 1, 2, "", "hash", nil, now)
 
@@ -72,7 +72,7 @@ func TestRecordShareDropsWhenStatsChannelClosed(t *testing.T) {
 	}
 }
 
-func TestCleanupDropsLateSharesWithoutRestoringPoolHashrate(t *testing.T) {
+func TestCleanupCountsLateSharesWithoutRestoringPoolHashrate(t *testing.T) {
 	now := time.Unix(1_700_000_000, 0)
 	metrics := NewPoolMetrics()
 	mc := &MinerConn{
@@ -97,6 +97,10 @@ func TestCleanupDropsLateSharesWithoutRestoringPoolHashrate(t *testing.T) {
 	stats := mc.snapshotStats()
 	if stats.Accepted != 0 || stats.WindowSubmissions != 0 || stats.TotalDifficulty != 0 {
 		t.Fatalf("late shares updated cleaned-up stats: %+v", stats)
+	}
+	accepted, rejected, _ := metrics.Snapshot()
+	if accepted != 2 || rejected != 0 {
+		t.Fatalf("late share pool totals = (%d, %d), want (2, 0)", accepted, rejected)
 	}
 }
 
