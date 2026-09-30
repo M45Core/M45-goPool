@@ -1,10 +1,48 @@
 package main
 
 import (
+	"math"
 	"sync/atomic"
 	"testing"
 	"time"
 )
+
+func TestSubmitRTTPercentiles(t *testing.T) {
+	var full [64]float64
+	for i := range full {
+		full[i] = float64(len(full) - i)
+	}
+	tests := []struct {
+		name    string
+		samples [64]float64
+		count   int
+		want50  float64
+		want95  float64
+	}{
+		{name: "empty"},
+		{name: "negative_count", count: -1},
+		{name: "invalid_samples", samples: [64]float64{0, -1, math.NaN()}, count: 3},
+		{name: "one_sample", samples: [64]float64{42}, count: 1, want50: 42, want95: 42},
+		{name: "unsorted_and_filtered", samples: [64]float64{9, 0, 3, -1, 7, math.NaN(), 1, 5}, count: 8, want50: 5, want95: 7},
+		{name: "ignore_unused_slots", samples: [64]float64{3, 1, 2, 100}, count: 3, want50: 2, want95: 2},
+		{name: "clamp_count", samples: [64]float64{3, 1, 2}, count: 100, want50: 2, want95: 2},
+		{name: "full", samples: full, count: len(full), want50: 32, want95: 60},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			before := tt.samples
+			p50, p95 := submitRTTPercentilesLocked(tt.samples, tt.count)
+			if p50 != tt.want50 || p95 != tt.want95 {
+				t.Fatalf("percentiles = (%v, %v), want (%v, %v)", p50, p95, tt.want50, tt.want95)
+			}
+			for i := range before {
+				if math.Float64bits(tt.samples[i]) != math.Float64bits(before[i]) {
+					t.Fatalf("caller sample %d was changed", i)
+				}
+			}
+		})
+	}
+}
 
 func TestSnapshotShareInfo_WorkStartShowsLiveElapsedWhileAwaitingFirstShare(t *testing.T) {
 	mc := &MinerConn{}

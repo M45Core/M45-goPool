@@ -11,6 +11,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/btcsuite/btcd/blockchain"
 )
 
 func targetFromBits(bits string) (*big.Int, error) {
@@ -21,10 +23,7 @@ func targetFromBits(bits string) (*big.Int, error) {
 	if len(b) != 4 {
 		return nil, fmt.Errorf("invalid bits length %d", len(b))
 	}
-	exp := b[0]
-	mantissa := new(big.Int).SetBytes(b[1:])
-	target := new(big.Int).Lsh(mantissa, 8*uint(exp-3))
-	return target, nil
+	return blockchain.CompactToBig(binary.BigEndian.Uint32(b)), nil
 }
 
 var diff1Target = func() *big.Int {
@@ -268,7 +267,7 @@ func blockHashFromHeader(header []byte) string {
 func difficultyFromBits(bits uint32) float64 {
 	bitsStr := uint32ToHex8Lower(bits)
 	target, err := targetFromBits(bitsStr)
-	if err != nil || target.Sign() == 0 {
+	if err != nil || target.Sign() <= 0 || target.BitLen() > 256 {
 		return 0
 	}
 	f := new(big.Float).SetPrec(256).SetInt(diff1Target)

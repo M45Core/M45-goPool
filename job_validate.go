@@ -216,6 +216,9 @@ func validateBits(bitsStr, targetStr string) (*big.Int, error) {
 	if target.Sign() <= 0 {
 		return nil, fmt.Errorf("bits produced non-positive target")
 	}
+	if target.BitLen() > 256 {
+		return nil, fmt.Errorf("bits target exceeds 256 bits")
+	}
 	if targetStr == "" {
 		return target, nil
 	}

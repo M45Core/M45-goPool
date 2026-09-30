@@ -487,7 +487,9 @@ func submitRTTPercentilesLocked(samples [64]float64, count int) (p50, p95 float6
 	if count > len(samples) {
 		count = len(samples)
 	}
-	vals := make([]float64, 0, count)
+	// samples is already a value copy; compact and sort it without allocating
+	// another buffer for every connection in a status snapshot.
+	vals := samples[:0]
 	for i := 0; i < count; i++ {
 		v := samples[i]
 		if v > 0 {

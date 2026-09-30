@@ -2,10 +2,11 @@ package main
 
 import (
 	"bytes"
+	"cmp"
 	"encoding/hex"
 	"fmt"
 	"math"
-	"sort"
+	"slices"
 	"strings"
 )
 
@@ -161,9 +162,13 @@ func buildCoinbaseOutputs(commitmentScript []byte, payouts []coinbasePayoutOutpu
 	}
 
 	// Encode payouts from largest to smallest; stable sort preserves tie order.
-	orderedPayouts := append([]coinbasePayoutOutput(nil), payouts...)
-	sort.SliceStable(orderedPayouts, func(i, j int) bool {
-		return orderedPayouts[i].Value > orderedPayouts[j].Value
+	// Validation bounds the count, so keep the caller's order intact using a
+	// stack buffer and avoid reflection-based sorting allocations.
+	var payoutBuf [maxCoinbasePayoutOutputs]coinbasePayoutOutput
+	orderedPayouts := payoutBuf[:len(payouts)]
+	copy(orderedPayouts, payouts)
+	slices.SortStableFunc(orderedPayouts, func(a, b coinbasePayoutOutput) int {
+		return cmp.Compare(b.Value, a.Value)
 	})
 
 	var outputs bytes.Buffer

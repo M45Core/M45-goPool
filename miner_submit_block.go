@@ -90,22 +90,7 @@ func (mc *MinerConn) handleBlockShare(reqID any, job *Job, stratumJobID string, 
 				if merkleOK {
 					header, err := job.buildBlockHeader(merkleRoot[:], ntime, nonce, int32(useVersion))
 					if err == nil {
-						var buf bytes.Buffer
-
-						buf.Write(header)
-						writeVarInt(&buf, uint64(1+len(job.Transactions)))
-						buf.Write(cbTx)
-						for _, tx := range job.Transactions {
-							raw, derr := hex.DecodeString(tx.Data)
-							if derr != nil {
-								err = fmt.Errorf("decode tx data: %w", derr)
-								break
-							}
-							buf.Write(raw)
-						}
-						if err == nil {
-							blockHex = hex.EncodeToString(buf.Bytes())
-						}
+						blockHex, err = assembleSolvedBlock(job, header, cbTx)
 					}
 				}
 			}
@@ -305,6 +290,10 @@ func assembleSolvedBlock(job *Job, header, coinbase []byte) (string, error) {
 	}
 	if len(coinbase) == 0 {
 		return "", fmt.Errorf("solved block coinbase is empty")
+	}
+	coinbase, err := coinbaseForBlock(coinbase)
+	if err != nil {
+		return "", err
 	}
 
 	var buf bytes.Buffer

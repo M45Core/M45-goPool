@@ -44,6 +44,15 @@ func solvedBlockPersistenceTestJob() *Job {
 	}
 }
 
+func solvedBlockPersistenceTestCoinbase(t *testing.T, job *Job) []byte {
+	t.Helper()
+	coinbase, _, err := serializeCoinbaseTx(job.Template.Height, []byte{1, 2, 3, 4}, make([]byte, 4), 4, []byte{0x51}, job.CoinbaseValue, "", "", "persist-test", 0)
+	if err != nil {
+		t.Fatalf("build persistence test coinbase: %v", err)
+	}
+	return coinbase
+}
+
 func runSolvedBlockPersistenceTest(mc *MinerConn, job *Job, header, coinbase []byte, hash string) {
 	mc.handleBlockShare(
 		1,
@@ -70,7 +79,7 @@ func TestSolvedBlockPersistedBeforeRPCAndNotReplayedConcurrently(t *testing.T) {
 	for i := range header {
 		header[i] = byte(i)
 	}
-	coinbase := []byte{0x01, 0x02, 0x03, 0x04}
+	coinbase := solvedBlockPersistenceTestCoinbase(t, job)
 	expectedBlock, err := assembleSolvedBlock(job, header, coinbase)
 	if err != nil {
 		t.Fatalf("assemble expected block: %v", err)
@@ -186,7 +195,7 @@ func TestSolvedBlockSQLiteContentionSpoolsBeforeRPC(t *testing.T) {
 	dataDir := t.TempDir()
 	job := solvedBlockPersistenceTestJob()
 	header := make([]byte, 80)
-	coinbase := []byte{0x41, 0x42}
+	coinbase := solvedBlockPersistenceTestCoinbase(t, job)
 	expectedBlock, err := assembleSolvedBlock(job, header, coinbase)
 	if err != nil {
 		t.Fatalf("assemble expected block: %v", err)
@@ -276,7 +285,7 @@ func TestSolvedBlockRejectionTransitionsToPending(t *testing.T) {
 	db := openPendingSubmissionTestDB(t)
 	job := solvedBlockPersistenceTestJob()
 	header := make([]byte, 80)
-	coinbase := []byte{0x01}
+	coinbase := solvedBlockPersistenceTestCoinbase(t, job)
 	hash := strings.Repeat("2", 64)
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -346,7 +355,7 @@ func TestSolvedBlockSubmissionContinuesWhenPersistenceFails(t *testing.T) {
 	rpc := &RPCClient{url: server.URL, client: server.Client(), lp: server.Client(), nextID: 1}
 	job := solvedBlockPersistenceTestJob()
 	header := make([]byte, 80)
-	coinbase := []byte{0x01}
+	coinbase := solvedBlockPersistenceTestCoinbase(t, job)
 	hash := strings.Repeat("3", 64)
 	mc := &MinerConn{id: "persistence-failure", conn: nopConn{}, rpc: rpc, cfg: Config{RPCURL: server.URL, DataDir: dataDir}}
 	runSolvedBlockPersistenceTest(mc, job, header, coinbase, hash)
@@ -391,7 +400,7 @@ func TestSolvedBlockSQLiteAndRPCFailureRecoversEmergencySpool(t *testing.T) {
 	for i := range header {
 		header[i] = byte(255 - i)
 	}
-	coinbase := []byte{0x02, 0x03, 0x04}
+	coinbase := solvedBlockPersistenceTestCoinbase(t, job)
 	hash := strings.Repeat("8", 64)
 	rpc := &RPCClient{url: server.URL, client: server.Client(), lp: server.Client(), nextID: 1}
 	mc := &MinerConn{id: "double-persistence-failure", conn: nopConn{}, rpc: rpc, cfg: Config{RPCURL: server.URL, DataDir: dataDir}}
@@ -476,7 +485,7 @@ func TestSolvedBlockSpoolPrecedesRPCAndAcceptedCleanupWaitsForSQLite(t *testing.
 	installControllablePendingPersistenceFailure(t, db)
 	job := solvedBlockPersistenceTestJob()
 	header := make([]byte, 80)
-	coinbase := []byte{0x21, 0x22}
+	coinbase := solvedBlockPersistenceTestCoinbase(t, job)
 	expectedBlock, err := assembleSolvedBlock(job, header, coinbase)
 	if err != nil {
 		t.Fatalf("assemble expected block: %v", err)
@@ -521,7 +530,7 @@ func TestSolvedBlockSpoolFailureCleanupWaitsForSQLite(t *testing.T) {
 	installControllablePendingPersistenceFailure(t, db)
 	job := solvedBlockPersistenceTestJob()
 	header := make([]byte, 80)
-	coinbase := []byte{0x31, 0x32}
+	coinbase := solvedBlockPersistenceTestCoinbase(t, job)
 	expectedBlock, err := assembleSolvedBlock(job, header, coinbase)
 	if err != nil {
 		t.Fatalf("assemble expected block: %v", err)
@@ -568,6 +577,8 @@ func (panickingSubmitRPC) callCtx(context.Context, string, any, any) error {
 
 func TestSolvedBlockPanicDoesNotStrandSubmittingRow(t *testing.T) {
 	db := openPendingSubmissionTestDB(t)
+	job := solvedBlockPersistenceTestJob()
+	coinbase := solvedBlockPersistenceTestCoinbase(t, job)
 	hash := strings.Repeat("4", 64)
 	mc := &MinerConn{id: "panic-after-persist", conn: nopConn{}, rpc: panickingSubmitRPC{}}
 
@@ -577,7 +588,7 @@ func TestSolvedBlockPanicDoesNotStrandSubmittingRow(t *testing.T) {
 				t.Error("expected forced RPC panic")
 			}
 		}()
-		runSolvedBlockPersistenceTest(mc, solvedBlockPersistenceTestJob(), make([]byte, 80), []byte{0x01}, hash)
+		runSolvedBlockPersistenceTest(mc, job, make([]byte, 80), coinbase, hash)
 	}()
 
 	var status, rpcError string

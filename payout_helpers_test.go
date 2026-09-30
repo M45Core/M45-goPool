@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"slices"
 	"strings"
 	"testing"
 
@@ -147,9 +148,9 @@ func TestSerializeCoinbaseTxPayoutsPredecoded_PaymentCountsAndOrdering(t *testin
 			name: "five_payments_with_stable_tie_order",
 			payouts: []coinbasePayoutOutput{
 				{Script: []byte{0x51}, Value: 7},
-				{Script: []byte{0x52}, Value: 7},
-				{Script: []byte{0x53}, Value: 3},
 				{Script: []byte{0x54}, Value: 2},
+				{Script: []byte{0x53}, Value: 3},
+				{Script: []byte{0x52}, Value: 7},
 				{Script: []byte{0x55}, Value: 1},
 			},
 			withCommitment:       true,
@@ -161,6 +162,7 @@ func TestSerializeCoinbaseTxPayoutsPredecoded_PaymentCountsAndOrdering(t *testin
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			originalPayouts := slices.Clone(tt.payouts)
 			var c []byte
 			if tt.withCommitment {
 				c = commitment
@@ -178,6 +180,11 @@ func TestSerializeCoinbaseTxPayoutsPredecoded_PaymentCountsAndOrdering(t *testin
 			)
 			if err != nil {
 				t.Fatalf("serializeCoinbaseTxPayoutsPredecoded error: %v", err)
+			}
+			for i, payout := range tt.payouts {
+				if payout.Value != originalPayouts[i].Value || !bytes.Equal(payout.Script, originalPayouts[i].Script) {
+					t.Fatalf("caller payout %d was changed", i)
+				}
 			}
 
 			outs := parseCoinbaseOutputs(t, raw)

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"encoding/hex"
 	"fmt"
@@ -13,8 +14,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/btcsuite/btcd/blockchain"
 	"github.com/btcsuite/btcd/btcutil"
 	"github.com/btcsuite/btcd/chaincfg"
+	"github.com/btcsuite/btcd/wire"
 )
 
 const bitcoinCoreRegtestIntegrationEnv = "GOPOOL_TEST_BITCOIN_CORE_REGTEST"
@@ -198,6 +201,20 @@ func TestBitcoinCoreRegtestAcceptsGoPoolBlock(t *testing.T) {
 	}
 
 	blockHex, blockHash := solveRegtestBlock(t, job, payoutScript)
+	// Core's submitblock repairs an omitted coinbase witness reserved value.
+	// Validate our serialized bytes first so that RPC behavior cannot hide an
+	// incomplete block in goPool's persisted submission record.
+	rawBlock, err := hex.DecodeString(blockHex)
+	if err != nil {
+		t.Fatalf("decode candidate block: %v", err)
+	}
+	var candidate wire.MsgBlock
+	if err := candidate.Deserialize(bytes.NewReader(rawBlock)); err != nil {
+		t.Fatalf("deserialize candidate block: %v", err)
+	}
+	if err := blockchain.ValidateWitnessCommitment(btcutil.NewBlock(&candidate)); err != nil {
+		t.Fatalf("candidate witness commitment: %v", err)
+	}
 	var submitResult any
 	if err := rpc.callCtx(testCtx, "submitblock", []any{blockHex}, &submitResult); err != nil {
 		t.Fatalf("submitblock RPC: %v", err)

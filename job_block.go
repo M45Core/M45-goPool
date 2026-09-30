@@ -288,21 +288,43 @@ func buildBlockWithScriptTime(job *Job, extranonce1 []byte, extranonce2 []byte, 
 		return "", nil, nil, nil, err
 	}
 
-	var buf bytes.Buffer
-
-	buf.Write(header)
-	writeVarInt(&buf, uint64(1+len(job.Transactions)))
-	buf.Write(coinbaseTx)
-
-	for _, tx := range job.Transactions {
-		raw, err := hex.DecodeString(tx.Data)
-		if err != nil {
-			return "", nil, nil, nil, fmt.Errorf("decode tx data: %w", err)
-		}
-		buf.Write(raw)
+	blockHex, err := assembleSolvedBlock(job, header, coinbaseTx)
+	if err != nil {
+		return "", nil, nil, nil, err
 	}
-
-	blockHex := hex.EncodeToString(buf.Bytes())
 	headerHash := doubleSHA256(header)
 	return blockHex, headerHash, header, merkleRootBE, nil
+}
+
+// coinbaseForBlock adds the BIP141 reserved value when the solved coinbase
+// contains a witness commitment. Stratum and merkle hashing use the base
+// serialization; block delivery must include its witness without changing
+// any of those committed bytes. Core's default commitment uses a zero value.
+func coinbaseForBlock(coinbase []byte) ([]byte, error) {
+	reader := bytes.NewReader(coinbase)
+	var tx wire.MsgTx
+	if err := tx.Deserialize(reader); err != nil {
+		return nil, fmt.Errorf("decode solved coinbase: %w", err)
+	}
+	if reader.Len() != 0 {
+		return nil, fmt.Errorf("solved coinbase contains trailing bytes")
+	}
+	coinbaseTx := btcutil.NewTx(&tx)
+	if !blockchain.IsCoinBase(coinbaseTx) {
+		return nil, fmt.Errorf("solved coinbase is not a coinbase transaction")
+	}
+	if _, hasCommitment := blockchain.ExtractWitnessCommitment(coinbaseTx); !hasCommitment || tx.HasWitness() {
+		return coinbase, nil
+	}
+
+	// Insert marker/flag after the version and one 32-byte witness item before
+	// locktime, preserving the exact base serialization that was hashed.
+	out := make([]byte, 0, len(coinbase)+36)
+	out = append(out, coinbase[:4]...)
+	out = append(out, 0x00, 0x01)
+	out = append(out, coinbase[4:len(coinbase)-4]...)
+	out = append(out, 0x01, 0x20)
+	out = append(out, make([]byte, 32)...)
+	out = append(out, coinbase[len(coinbase)-4:]...)
+	return out, nil
 }

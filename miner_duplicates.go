@@ -132,7 +132,10 @@ func (s *duplicateShareSet) seenOrAdd(key duplicateShareKey) bool {
 		for i := 0; i < evictCount; i++ {
 			delete(s.m, s.order[i])
 		}
-		s.order = s.order[evictCount:]
+		// Retain the backing array's capacity across evictions instead of
+		// repeatedly shrinking it and allocating when new shares are appended.
+		remaining := copy(s.order, s.order[evictCount:])
+		s.order = s.order[:remaining]
 	}
 
 	// Add new key
