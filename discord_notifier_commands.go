@@ -88,7 +88,8 @@ func (n *discordNotifier) handleCommand(s *discordgo.Session, i *discordgo.Inter
 		if ch := strings.TrimSpace(n.notifyChannelID); ch != "" {
 			channelRef = fmt.Sprintf(" in <#%s>", ch)
 		}
-		_ = respondEphemeral(s, i, "Enabled. You’ll be pinged"+channelRef+" when a saved worker stays offline for over 2 minutes (and again when it’s back online for 2+ minutes), and when a saved worker finds a block. To turn this off, run `/notify-stop`.")
+		thresholdLabel := formatNotifyThresholdLabel(n.workerNotifyThreshold())
+		_ = respondEphemeral(s, i, "Enabled. You’ll be pinged"+channelRef+" when a saved worker stays offline for "+thresholdLabel+", stops submitting shares for about "+formatNotifyThresholdLabel(2*n.workerNotifyThreshold())+", recovers for "+thresholdLabel+", or finds a block. Checks start after the pool’s 5-minute warm-up. To turn this off, run `/notify-stop`.")
 	case "notify-stop":
 		if n.s.workerLists != nil {
 			_ = n.s.workerLists.DisableDiscordLinkByDiscordUserID(i.Member.User.ID, time.Now())

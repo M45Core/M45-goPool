@@ -101,7 +101,7 @@ func TestDiscordNotifierUpdateWorkerStates_NoRecoveryWhenOfflineShort(t *testing
 	}
 }
 
-func TestDiscordNotifierUpdateWorkerStates_NoOfflineWhenOnlineTooShort(t *testing.T) {
+func TestDiscordNotifierUpdateWorkerStates_OfflineAfterShortOnline(t *testing.T) {
 	n := &discordNotifier{}
 	userID := "user-4"
 	hash := "worker-hash-4"
@@ -114,7 +114,7 @@ func TestDiscordNotifierUpdateWorkerStates_NoOfflineWhenOnlineTooShort(t *testin
 		t.Fatalf("unexpected notifications on first observation: offline=%v online=%v", offline, online)
 	}
 
-	// Not online long enough before going offline -> should never notify offline.
+	// A short online period must not hide a sustained subsequent outage.
 	t1 := t0.Add(1 * time.Minute)
 	current[hash] = false
 	offline, online = n.updateWorkerStates(userID, current, t1)
@@ -124,8 +124,8 @@ func TestDiscordNotifierUpdateWorkerStates_NoOfflineWhenOnlineTooShort(t *testin
 
 	t2 := t1.Add(10 * time.Minute)
 	offline, online = n.updateWorkerStates(userID, current, t2)
-	if len(offline) != 0 || len(online) != 0 {
-		t.Fatalf("unexpected offline notification without qualifying prior online: offline=%v online=%v", offline, online)
+	if len(offline) != 1 || offline[0] != hash || len(online) != 0 {
+		t.Fatalf("expected sustained outage notification after short online period: offline=%v online=%v", offline, online)
 	}
 }
 
@@ -200,5 +200,8 @@ func TestDiscordNotifierUpdateWorkerStates_NoOfflineWithoutPriorOnline(t *testin
 	offline, online = n.updateWorkerStates(userID, current, t1)
 	if len(offline) != 0 || len(online) != 0 {
 		t.Fatalf("unexpected offline notification without prior online: offline=%v online=%v", offline, online)
+	}
+	if offline, online := n.updateWorkerStates(userID, current, t1.Add(time.Hour)); len(offline) != 0 || len(online) != 0 {
+		t.Fatalf("unexpected late alert without prior online: offline=%v online=%v", offline, online)
 	}
 }

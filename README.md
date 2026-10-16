@@ -23,7 +23,7 @@ includes a status UI and JSON APIs for monitoring.
 - **Saved workers** so your favorite rigs are easy to revisit anytime.
 - **24-hour hashrate charts** to spot drops, spikes, and stability trends.
 - **Best share tracking** so you can see standout shares over time.
-- **Discord pings** (optional): alerts when a saved worker goes offline, when it has been back online long enough to count as recovered, and when a saved worker finds a block.
+- **Discord pings** (optional): alerts when a saved worker goes offline, stops submitting shares, recovers, or finds a block. Checks start after a five-minute startup/reconnect warm-up. Offline and recovery alerts require a sustained `discord_worker_notify_threshold_seconds` (default: five minutes), while workers already offline when checks start remain silent. Connected miners get one threshold without shares before being considered inactive, then another threshold before an alert (about ten minutes by default). Any connection submitting shares keeps that saved worker active; a positive historical hashrate alone does not.
 - **Easy connect details** shown on the site for miner setup.
 
 - **Solo mining core**: builds and submits Bitcoin blocks directly against Bitcoin Core (`getblocktemplate` + `submitblock`) with JSON-RPC and optional ZMQ acceleration.

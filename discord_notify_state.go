@@ -10,9 +10,8 @@ type workerNotifyState struct {
 	SeenOnline  bool
 	SeenOffline bool
 
-	// OfflineEligible is set when a worker transitions from online -> offline and
-	// had been continuously online for long enough to qualify for an offline
-	// notification.
+	// OfflineEligible is set when an active worker becomes offline or stops
+	// submitting shares. Workers already inactive at startup/reset stay quiet.
 	OfflineEligible bool
 
 	OfflineNotified bool

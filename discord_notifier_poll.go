@@ -68,7 +68,11 @@ func (n *discordNotifier) pollBatch(budget, tick, targetFullScan time.Duration) 
 	n.stateMu.Unlock()
 	if lastLinksRefresh.IsZero() || now.Sub(lastLinksRefresh) >= refreshInterval {
 		links, err := n.s.workerLists.ListEnabledDiscordLinks()
-		if err != nil || len(links) == 0 {
+		if err != nil {
+			logger.Warn("discord links load failed", "error", err)
+			return
+		}
+		if len(links) == 0 {
 			n.stateMu.Lock()
 			n.links = nil
 			n.linkIdx = 0
@@ -129,13 +133,19 @@ func (n *discordNotifier) checkUser(link discordLink, now time.Time) {
 	}
 
 	saved, err := n.s.workerLists.List(link.UserID)
-	if err != nil || len(saved) == 0 {
+	if err != nil {
+		logger.Warn("discord saved workers load failed", "error", err, "user_id", link.UserID)
+		return
+	}
+	if len(saved) == 0 {
 		n.clearUserOfflineState(link.UserID)
 		return
 	}
 
 	currentOnline := make(map[string]bool, len(saved))
 	nameByHash := make(map[string]string, len(saved))
+	connected := make(map[string]bool, len(saved))
+	threshold := n.workerNotifyThreshold()
 	for _, sw := range saved {
 		if !sw.NotifyEnabled {
 			continue
@@ -144,7 +154,8 @@ func (n *discordNotifier) checkUser(link discordLink, now time.Time) {
 		if lookupHash == "" {
 			continue
 		}
-		currentOnline[lookupHash] = len(views) > 0
+		connected[lookupHash] = len(views) > 0
+		currentOnline[lookupHash] = workerHasRecentShares(views, now, threshold)
 		if _, ok := nameByHash[lookupHash]; !ok {
 			nameByHash[lookupHash] = sw.Name
 		}
@@ -155,27 +166,58 @@ func (n *discordNotifier) checkUser(link discordLink, now time.Time) {
 		return
 	}
 
-	thresholdLabel := formatNotifyThresholdLabel(n.workerNotifyThreshold())
+	thresholdLabel := formatNotifyThresholdLabel(threshold)
+	var disconnected, notMining []string
+	for _, hash := range offlineOverdue {
+		if connected[hash] {
+			notMining = append(notMining, hash)
+		} else {
+			disconnected = append(disconnected, hash)
+		}
+	}
 	detailed := len(offlineOverdue) <= 1 && len(onlineOverdue) <= 1
 	parts := make([]string, 0, 3)
 	if detailed {
-		if len(offlineOverdue) > 0 {
-			parts = append(parts, "Offline >"+thresholdLabel+": "+strings.Join(renderNames(offlineOverdue, nameByHash), ", "))
+		if len(disconnected) > 0 {
+			parts = append(parts, "Offline >"+thresholdLabel+": "+strings.Join(renderNames(disconnected, nameByHash), ", "))
+		}
+		if len(notMining) > 0 {
+			parts = append(parts, "Not mining (no recent shares): "+strings.Join(renderNames(notMining, nameByHash), ", "))
 		}
 		if len(onlineOverdue) > 0 {
-			parts = append(parts, "Back online ("+thresholdLabel+"+): "+strings.Join(renderNames(onlineOverdue, nameByHash), ", "))
+			parts = append(parts, "Back online/mining ("+thresholdLabel+"+): "+strings.Join(renderNames(onlineOverdue, nameByHash), ", "))
 		}
 	} else {
-		if len(offlineOverdue) > 0 {
-			parts = append(parts, fmt.Sprintf("%d miners offline >%s", len(offlineOverdue), thresholdLabel))
+		if len(disconnected) > 0 {
+			parts = append(parts, fmt.Sprintf("%d miners offline >%s", len(disconnected), thresholdLabel))
+		}
+		if len(notMining) > 0 {
+			parts = append(parts, fmt.Sprintf("%d miners not mining (no recent shares)", len(notMining)))
 		}
 		if len(onlineOverdue) > 0 {
-			parts = append(parts, fmt.Sprintf("%d miners back online (%s+)", len(onlineOverdue), thresholdLabel))
+			parts = append(parts, fmt.Sprintf("%d miners back online/mining (%s+)", len(onlineOverdue), thresholdLabel))
 		}
 	}
 
 	line := strings.Join(parts, " | ")
 	n.enqueuePing(link.DiscordUserID, line)
+}
+
+// workerHasRecentShares treats any connection with recent share submissions as
+// active. A new connection gets one threshold to submit its first share; the
+// state machine then requires another sustained threshold before alerting.
+// Use timestamps, since a historical hashrate can stay positive after mining stops.
+func workerHasRecentShares(views []WorkerView, now time.Time, threshold time.Duration) bool {
+	for _, view := range views {
+		lastActivity := view.LastShare
+		if lastActivity.IsZero() {
+			lastActivity = view.ConnectedAt
+		}
+		if !lastActivity.IsZero() && now.Sub(lastActivity) < threshold {
+			return true
+		}
+	}
+	return false
 }
 
 // NotifyFoundBlock pings any subscribed Discord users who have this worker
@@ -270,7 +312,6 @@ func (n *discordNotifier) updateWorkerStates(userID string, current map[string]b
 	// Use one sustained threshold to reduce flapping notifications and require
 	// meaningful state changes (configured via services.toml/policy.toml/tuning.toml).
 	offlineThreshold := n.workerNotifyThreshold()
-	onlineBeforeOfflineThreshold := offlineThreshold
 	recoveryThreshold := offlineThreshold
 
 	n.stateMu.Lock()
@@ -320,9 +361,9 @@ func (n *discordNotifier) updateWorkerStates(userID string, current map[string]b
 			st.OfflineNotified = false
 			st.RecoveryNotified = false
 			if wasOnline && !online {
-				// Online -> offline: qualify the offline notification based on the
-				// length of the preceding online period.
-				st.OfflineEligible = prevDuration >= onlineBeforeOfflineThreshold
+				// Alert on sustained outages observed after activity, even if
+				// the preceding active period was short.
+				st.OfflineEligible = true
 				st.RecoveryEligible = false
 			} else if !wasOnline && online {
 				// Offline -> online: qualify the recovery notification based on the
