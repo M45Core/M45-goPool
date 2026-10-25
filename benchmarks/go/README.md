@@ -6,8 +6,10 @@ suite and regenerate the SVG.
 
 ## Current results
 
-The heat map shows the unpinned August 15, 2026 production-profile rerun on a
-32-logical-CPU host. The older August 13 raw result matrix is committed as
+The heat map shows the unpinned October 25, 2026 production-profile rerun on a
+32-logical-CPU host. Raw measurements and the execution log are committed as
+[`go-benchmarks-20261025T191843Z.jsonl`](../../reports/go-benchmarks/go-benchmarks-20261025T191843Z.jsonl)
+and [`go-benchmarks-20261025T191843Z.log`](../../reports/go-benchmarks/go-benchmarks-20261025T191843Z.log). The older August 13 raw result matrix is committed as
 [`go-benchmarks-20260813T184353Z.jsonl`](../../reports/go-benchmarks/go-benchmarks-20260813T184353Z.jsonl).
 That run predates the profile and worker-identity rules below, so it remains a
 legacy, unlabeled result set and must not be presented as the production-profile
@@ -39,6 +41,14 @@ uses a 10-second polling interval for the no-ZMQ test. The stock Enterprise
 connection cap remains 4,096, so all three `10000`-miner WarpPool cells are
 explicitly recorded and rendered as failures.
 
+The suite also supports Erikslund (`erikslund-cpp`), using the adapter from
+[Erikslund-net/open-pool-benchmark](https://github.com/Erikslund-net/open-pool-benchmark).
+It builds `Erikslund-net/erikslund-solo-pool`'s `main` branch with its upstream
+Dockerfile and checks `/health` on port 7777 before probing Stratum on port 3333.
+The config enables vardiff and allows 100,000 clients. The no-ZMQ case clears
+`zmq_block_endpoint` and uses 10-second block polling. Erikslund is included in
+new default runs and in the October 25 heat map.
+
 ![Benchmark heat map](heatmap.svg)
 
 Every numeric value is a colored tile. Each metric column is logarithmically
@@ -69,7 +79,7 @@ logging, unique-worker, and unrestricted-multicore rules.
 Useful knobs:
 
 ```bash
-GO_BENCH_POOLS=gopool,pogolo,ckpool,warppool,public-pool
+GO_BENCH_POOLS=gopool,pogolo,ckpool,warppool,public-pool,erikslund-cpp
 GO_BENCH_MINERS=100,1000,10000
 GO_BENCH_SUBMIT_DURATION=8s
 GO_BENCH_NOTIFY_ROUNDS=5

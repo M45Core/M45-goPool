@@ -3,7 +3,7 @@ set -euo pipefail
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 bench_dir="${GO_BENCHMARK_ENV_DIR:-${repo_root}/.benchmarks/go-benchmark-env}"
-upstream="${GO_BENCHMARK_ENV_REPO:-https://github.com/eandersson/open-pool-benchmark.git}"
+upstream="${GO_BENCHMARK_ENV_REPO:-https://github.com/Erikslund-net/open-pool-benchmark.git}"
 ref="${GO_BENCHMARK_ENV_REF:-main}"
 overlay="${repo_root}/benchmarks/go/openbench"
 src_dir="${bench_dir}/pools/gopool/src"
@@ -23,7 +23,9 @@ if [ ! -d "${bench_dir}/.git" ]; then
   git clone --depth 1 --branch "$ref" "$upstream" "$bench_dir"
 else
   git -C "$bench_dir" fetch --depth 1 origin "$ref"
-  git -C "$bench_dir" checkout --detach FETCH_HEAD >/dev/null
+  # This checkout is a disposable harness cache. The overlays below modify
+  # tracked files, so discard those generated changes when refreshing upstream.
+  git -C "$bench_dir" checkout --detach --force FETCH_HEAD >/dev/null
   git -C "$bench_dir" reset --hard FETCH_HEAD >/dev/null
 fi
 
@@ -39,6 +41,8 @@ cp "${overlay}/pools/ckpool/Dockerfile" "${bench_dir}/pools/ckpool/Dockerfile"
 mkdir -p "${bench_dir}/pools/warppool"
 cp "${overlay}/pools/warppool/bench.toml" "${bench_dir}/pools/warppool/bench.toml"
 cp "${overlay}/pools/warppool/Dockerfile" "${bench_dir}/pools/warppool/Dockerfile"
+mkdir -p "${bench_dir}/pools/erikslund-cpp"
+cp "${overlay}/pools/erikslund-cpp/bench.yml" "${bench_dir}/pools/erikslund-cpp/bench.yml"
 mkdir -p "${bench_dir}/pools/public-pool"
 cp "${overlay}/pools/public-pool/bench.env" "${bench_dir}/pools/public-pool/bench.env"
 cp "${overlay}/pools/public-pool/Dockerfile" "${bench_dir}/pools/public-pool/Dockerfile"
@@ -46,6 +50,10 @@ cp "${overlay}/pools/public-pool/Dockerfile.dockerignore" \
   "${bench_dir}/pools/public-pool/Dockerfile.dockerignore"
 
 if [ "${GO_BENCHMARK_NO_ZMQ:-0}" = "1" ]; then
+  sed -i \
+    -e 's#^zmq_block_endpoint: .*#zmq_block_endpoint: ""#' \
+    -e 's#^block_poll_milliseconds: .*#block_poll_milliseconds: 10000#' \
+    "${bench_dir}/pools/erikslund-cpp/bench.yml"
   sed -i \
     -e 's#^  zmq_hashblock_addr = .*#  zmq_hashblock_addr = ""#' \
     -e 's#^  zmq_rawblock_addr = .*#  zmq_rawblock_addr = ""#' \

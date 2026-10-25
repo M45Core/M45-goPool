@@ -4,7 +4,7 @@ set -euo pipefail
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$repo_root"
 
-pools_csv="${GO_BENCH_POOLS:-gopool,pogolo,ckpool,warppool,public-pool}"
+pools_csv="${GO_BENCH_POOLS:-gopool,pogolo,ckpool,warppool,public-pool,erikslund-cpp}"
 miners_csv="${GO_BENCH_MINERS:-100,1000,10000}"
 pipeline="${GO_BENCH_SUBMIT_PIPELINE:-1}"
 warmup="${GO_BENCH_SUBMIT_WARMUP:-3s}"
@@ -76,7 +76,7 @@ PY
 
 pool_port() {
   case "$1" in
-    gopool|ckpool|warppool|public-pool) printf '3333' ;;
+    gopool|ckpool|warppool|public-pool|erikslund-cpp) printf '3333' ;;
     pogolo) printf '5661' ;;
     *) echo "unknown pool: $1" >&2; exit 2 ;;
   esac

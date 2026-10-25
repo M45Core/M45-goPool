@@ -1,7 +1,7 @@
 # Go benchmark pool registry for local comparison runs.
 #
 # This overlay keeps the comparison intentionally focused on goPool, pogolo,
-# ckpool, WarpPool, and public-pool. It is copied over the upstream
+# ckpool, WarpPool, public-pool, and Erikslund. It is copied over the upstream
 # harness by scripts/go-benchmark-env.sh.
 
 regtest:
@@ -117,3 +117,24 @@ pools:
     readiness:
       kind: tcp
       timeout_seconds: 150
+
+  erikslund-cpp:
+    description: Erikslund-net/erikslund-solo-pool main (C++26 solo pool)
+    source: build
+    repo: https://github.com/Erikslund-net/erikslund-solo-pool.git
+    repo_ref: main
+    repo_dir: pools/erikslund-cpp/src
+    build_context: pools/erikslund-cpp/src
+    dockerfile: Dockerfile
+    stratum_port: 3333
+    api_port: 7777
+    config:
+      format: yaml
+      template: pools/erikslund-cpp/bench.yml
+      mount: /etc/erikslund-pool/pool.yml
+    readiness:
+      kind: http
+      url: http://${POOL_HOST}:${API_PORT}/health
+      status: 200
+      body: ok
+      timeout_seconds: 60

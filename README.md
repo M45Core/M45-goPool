@@ -73,7 +73,7 @@ Stratum notes:
 
 Current `mining.submit` and `mining.notify` results for `100`, `1000`, and
 `10000` miners are in [`benchmarks/go/`](benchmarks/go/). The heat map below is
-from the August 15, 2026 production-profile rerun.
+from the October 25, 2026 production-profile rerun.
 
 The production benchmark profile keeps normal submit-validation checks,
 vardiff, telemetry, and startup maintenance enabled. Connection-rate limits and
@@ -82,8 +82,10 @@ complete. All simulated connections use unique workers; per-share disk logging
 is disabled while errors remain enabled; CPU pinning and scheduler limits are
 not applied.
 
-The reproducible suite supports goPool, pogolo, ckpool, dvb-WarpPool, and
-public-pool.
+The reproducible suite supports goPool, pogolo, ckpool, dvb-WarpPool,
+public-pool, and Erikslund (`erikslund-cpp`).
+The Erikslund adapter follows [Erikslund-net/open-pool-benchmark](https://github.com/Erikslund-net/open-pool-benchmark)
+and builds the pool's `main` branch with its upstream Dockerfile.
 It uses pogolo v1.1.4-hotfix, CKPool v1.2.0, WarpPool's `main` branch, and
 public-pool's `master` branch. WarpPool is built unmodified with the stock
 Enterprise profile; its 10,000-client rows are reported as failures because that profile's

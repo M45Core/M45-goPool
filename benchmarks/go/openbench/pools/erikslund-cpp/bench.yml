@@ -1,0 +1,20 @@
+# Based on Erikslund-net/open-pool-benchmark pools/erikslund-cpp/bench.yml.
+bitcoin_nodes:
+  - address: ${RPC_HOST}:${RPC_PORT}
+    username: ${RPC_USER}
+    password: ${RPC_PASS}
+stratum_listen:
+  - 0.0.0.0:3333
+api_listen:
+  - 0.0.0.0:7777
+max_clients: 100000
+initial_difficulty: ${DIFFICULTY}
+minimum_difficulty: ${MIN_DIFFICULTY}
+maximum_difficulty: ${MAX_DIFFICULTY}
+variable_difficulty: true
+coinbase_signature: ${TAG}
+fast_block_notify: true
+zmq_block_endpoint: tcp://${RPC_HOST}:28332
+block_poll_milliseconds: 600000
+work_rebroadcast_seconds: 600
+stats_directory: /tmp/openbench-stats
