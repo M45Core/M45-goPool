@@ -2,7 +2,6 @@
 
 [![Go CI](https://github.com/M45Core/M45-goPool/actions/workflows/ci.yml/badge.svg)](https://github.com/M45Core/M45-goPool/actions/workflows/ci.yml)
 [![Go Vulncheck](https://github.com/M45Core/M45-goPool/actions/workflows/govulncheck.yml/badge.svg)](https://github.com/M45Core/M45-goPool/actions/workflows/govulncheck.yml)
-[![Go Report Card](https://goreportcard.com/badge/github.com/M45Core/M45-goPool)](https://goreportcard.com/report/github.com/M45Core/M45-goPool)
 [![License](https://img.shields.io/github/license/M45Core/M45-goPool)](LICENSE)
 
 goPool is a from-scratch Go solo Bitcoin mining pool. It connects directly to
