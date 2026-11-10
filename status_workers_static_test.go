@@ -34,6 +34,7 @@ func TestHandleUmbrelPage(t *testing.T) {
 	body := rec.Body.String()
 	for _, want := range []string{
 		"Run M45 goPool on Umbrel",
+		`href="https://discord.gg/DeMXzu3kbA"`,
 		`href="https://github.com/M45-Software/M45-goPool"`,
 		"https://github.com/M45-Software/M45-goPool/issues",
 		"https://github.com/M45-Software/M45-Umbrel-Community-App-Store",

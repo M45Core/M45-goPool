@@ -17,6 +17,7 @@ const (
 	defaultStatusTLSAddr     = ":443"
 	defaultStatusTagline     = "Solo Mining Pool"
 	defaultFiatCurrency      = "usd"
+	defaultDiscordURL        = "https://discord.gg/DeMXzu3kbA"
 	defaultGitHubURL         = "https://github.com/M45-Software/M45-goPool"
 	defaultMempoolAddressURL = "https://mempool.space/address/"
 	defaultStratumTLSListen  = ":4333"

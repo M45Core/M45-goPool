@@ -12,6 +12,7 @@ func defaultConfig() Config {
 		StatusTagline:                       defaultStatusTagline,
 		FiatCurrency:                        defaultFiatCurrency,
 		DiscordWorkerNotifyThresholdSeconds: defaultDiscordWorkerNotifyThresholdSeconds,
+		DiscordURL:                          defaultDiscordURL,
 		GitHubURL:                           defaultGitHubURL,
 		MempoolAddressURL:                   defaultMempoolAddressURL,
 		StratumTLSListen:                    defaultStratumTLSListen,

@@ -28,7 +28,7 @@
 [discord]
   discord_notify_channel_id = ""
   discord_server_id = ""
-  discord_url = ""
+  discord_url = "https://discord.gg/DeMXzu3kbA"
   worker_notify_threshold_seconds = 300
 
 [status]
