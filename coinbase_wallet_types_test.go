@@ -6,12 +6,12 @@ import (
 	"math"
 	"testing"
 
+	btcaddress "github.com/btcsuite/btcd/address/v2"
 	"github.com/btcsuite/btcd/btcec/v2"
 	"github.com/btcsuite/btcd/btcec/v2/schnorr"
-	"github.com/btcsuite/btcd/btcutil"
-	"github.com/btcsuite/btcd/chaincfg"
-	"github.com/btcsuite/btcd/txscript"
-	"github.com/btcsuite/btcd/wire"
+	"github.com/btcsuite/btcd/chaincfg/v2"
+	"github.com/btcsuite/btcd/txscript/v2"
+	"github.com/btcsuite/btcd/wire/v2"
 )
 
 type walletFixture struct {
@@ -33,8 +33,8 @@ func mustGeneratedMainnetWalletFixtures(t *testing.T) []walletFixture {
 	}
 
 	newP2PKH := func() string {
-		pkh := btcutil.Hash160(newPriv().PubKey().SerializeCompressed())
-		addr, err := btcutil.NewAddressPubKeyHash(pkh, params)
+		pkh := btcaddress.Hash160(newPriv().PubKey().SerializeCompressed())
+		addr, err := btcaddress.NewAddressPubKeyHash(pkh, params)
 		if err != nil {
 			t.Fatalf("NewAddressPubKeyHash: %v", err)
 		}
@@ -42,10 +42,10 @@ func mustGeneratedMainnetWalletFixtures(t *testing.T) []walletFixture {
 	}
 
 	newNestedP2WPKH := func() string {
-		pkh := btcutil.Hash160(newPriv().PubKey().SerializeCompressed())
+		pkh := btcaddress.Hash160(newPriv().PubKey().SerializeCompressed())
 		redeemScript := append([]byte{0x00, 0x14}, pkh...)
-		redeemHash := btcutil.Hash160(redeemScript)
-		addr, err := btcutil.NewAddressScriptHashFromHash(redeemHash, params)
+		redeemHash := btcaddress.Hash160(redeemScript)
+		addr, err := btcaddress.NewAddressScriptHashFromHash(redeemHash, params)
 		if err != nil {
 			t.Fatalf("NewAddressScriptHashFromHash: %v", err)
 		}
@@ -53,8 +53,8 @@ func mustGeneratedMainnetWalletFixtures(t *testing.T) []walletFixture {
 	}
 
 	newP2WPKH := func() string {
-		pkh := btcutil.Hash160(newPriv().PubKey().SerializeCompressed())
-		addr, err := btcutil.NewAddressWitnessPubKeyHash(pkh, params)
+		pkh := btcaddress.Hash160(newPriv().PubKey().SerializeCompressed())
+		addr, err := btcaddress.NewAddressWitnessPubKeyHash(pkh, params)
 		if err != nil {
 			t.Fatalf("NewAddressWitnessPubKeyHash: %v", err)
 		}
@@ -70,7 +70,7 @@ func mustGeneratedMainnetWalletFixtures(t *testing.T) []walletFixture {
 			t.Fatalf("build witness script: %v", err)
 		}
 		hash := sha256.Sum256(witnessScript)
-		addr, err := btcutil.NewAddressWitnessScriptHash(hash[:], params)
+		addr, err := btcaddress.NewAddressWitnessScriptHash(hash[:], params)
 		if err != nil {
 			t.Fatalf("NewAddressWitnessScriptHash: %v", err)
 		}
@@ -80,7 +80,7 @@ func mustGeneratedMainnetWalletFixtures(t *testing.T) []walletFixture {
 	newP2TR := func() string {
 		internal := newPriv().PubKey()
 		outputKey := txscript.ComputeTaprootKeyNoScript(internal)
-		addr, err := btcutil.NewAddressTaproot(schnorr.SerializePubKey(outputKey), params)
+		addr, err := btcaddress.NewAddressTaproot(schnorr.SerializePubKey(outputKey), params)
 		if err != nil {
 			t.Fatalf("NewAddressTaproot: %v", err)
 		}
@@ -327,7 +327,7 @@ func TestScriptCompatibilityWithBtcd(t *testing.T) {
 			addrStr := wallet.address
 
 			// Decode with btcd.
-			btcdAddr, err := btcutil.DecodeAddress(addrStr, params)
+			btcdAddr, err := btcaddress.DecodeAddress(addrStr, params)
 			if err != nil {
 				t.Skipf("btcd doesn't support this address: %v", err)
 			}

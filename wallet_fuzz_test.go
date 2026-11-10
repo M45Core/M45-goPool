@@ -7,11 +7,11 @@ import (
 	"strings"
 	"testing"
 
+	btcaddress "github.com/btcsuite/btcd/address/v2"
 	"github.com/btcsuite/btcd/btcec/v2"
 	"github.com/btcsuite/btcd/btcec/v2/schnorr"
-	"github.com/btcsuite/btcd/btcutil"
-	"github.com/btcsuite/btcd/chaincfg"
-	"github.com/btcsuite/btcd/txscript"
+	"github.com/btcsuite/btcd/chaincfg/v2"
+	"github.com/btcsuite/btcd/txscript/v2"
 )
 
 // FuzzScriptForAddress exercises scriptForAddress across randomly generated
@@ -42,7 +42,7 @@ func FuzzScriptForAddress(f *testing.F) {
 			params = &chaincfg.RegressionNetParams
 		}
 
-		addr, err := btcutil.DecodeAddress(addrStr, params)
+		addr, err := btcaddress.DecodeAddress(addrStr, params)
 		if err != nil {
 			// For invalid addresses, scriptForAddress should also reject or
 			// at least not panic. We only assert that it does not panic.
@@ -63,7 +63,7 @@ func FuzzScriptForAddress(f *testing.F) {
 
 // FuzzValidateWorkerWallet feeds random worker names through
 // validateWorkerWallet and checks that, when the base part decodes as a valid
-// address for the current network, our helper agrees with btcutil.DecodeAddress.
+// address for the current network, our helper agrees with btcaddress.DecodeAddress.
 func FuzzValidateWorkerWallet(f *testing.F) {
 	f.Add("1BitcoinEaterAddressDontSendf59kuE")
 	f.Add("1BitcoinEaterAddressDontSendf59kuE.worker1")
@@ -71,7 +71,7 @@ func FuzzValidateWorkerWallet(f *testing.F) {
 
 	f.Fuzz(func(t *testing.T, worker string) {
 		// Use mainnet parameters here; the goal is consistency with
-		// btcutil.DecodeAddress under the same network.
+		// btcaddress.DecodeAddress under the same network.
 		SetChainParams("mainnet")
 		params := ChainParams()
 
@@ -86,7 +86,7 @@ func FuzzValidateWorkerWallet(f *testing.F) {
 			_ = validateWorkerWallet(nil, newDummyAccountStore(t), worker)
 			return
 		}
-		addr, err := btcutil.DecodeAddress(raw, params)
+		addr, err := btcaddress.DecodeAddress(raw, params)
 		store := newDummyAccountStore(t)
 		okPool := validateWorkerWallet(nil, store, worker)
 
@@ -117,25 +117,25 @@ func fuzzGeneratedAddress(t *testing.T, params *chaincfg.Params, seed []byte, id
 
 	keyMaterial := fuzzDigest(seed, byte(idx), 0x01)
 	priv, _ := btcec.PrivKeyFromBytes(keyMaterial[:])
-	pkh := btcutil.Hash160(priv.PubKey().SerializeCompressed())
+	pkh := btcaddress.Hash160(priv.PubKey().SerializeCompressed())
 
 	switch typ {
 	case 0:
-		addr, err := btcutil.NewAddressPubKeyHash(pkh, params)
+		addr, err := btcaddress.NewAddressPubKeyHash(pkh, params)
 		if err != nil {
 			t.Fatalf("NewAddressPubKeyHash: %v", err)
 		}
 		return addr.EncodeAddress()
 	case 1:
 		redeemScript := append([]byte{0x00, 0x14}, pkh...)
-		redeemHash := btcutil.Hash160(redeemScript)
-		addr, err := btcutil.NewAddressScriptHashFromHash(redeemHash, params)
+		redeemHash := btcaddress.Hash160(redeemScript)
+		addr, err := btcaddress.NewAddressScriptHashFromHash(redeemHash, params)
 		if err != nil {
 			t.Fatalf("NewAddressScriptHashFromHash: %v", err)
 		}
 		return addr.EncodeAddress()
 	case 2:
-		addr, err := btcutil.NewAddressWitnessPubKeyHash(pkh, params)
+		addr, err := btcaddress.NewAddressWitnessPubKeyHash(pkh, params)
 		if err != nil {
 			t.Fatalf("NewAddressWitnessPubKeyHash: %v", err)
 		}
@@ -149,14 +149,14 @@ func fuzzGeneratedAddress(t *testing.T, params *chaincfg.Params, seed []byte, id
 			t.Fatalf("build witness script: %v", err)
 		}
 		hash := sha256.Sum256(witnessScript)
-		addr, err := btcutil.NewAddressWitnessScriptHash(hash[:], params)
+		addr, err := btcaddress.NewAddressWitnessScriptHash(hash[:], params)
 		if err != nil {
 			t.Fatalf("NewAddressWitnessScriptHash: %v", err)
 		}
 		return addr.EncodeAddress()
 	default:
 		outputKey := txscript.ComputeTaprootKeyNoScript(priv.PubKey())
-		addr, err := btcutil.NewAddressTaproot(schnorr.SerializePubKey(outputKey), params)
+		addr, err := btcaddress.NewAddressTaproot(schnorr.SerializePubKey(outputKey), params)
 		if err != nil {
 			t.Fatalf("NewAddressTaproot: %v", err)
 		}
@@ -267,7 +267,7 @@ func FuzzGeneratedWalletAddressBatch(f *testing.F) {
 			typeByte := fuzzDigest(seed, byte(i), 0x02)
 			addrStr := fuzzGeneratedAddress(t, params, seed, i, int(typeByte[0]%5))
 
-			decoded, err := btcutil.DecodeAddress(addrStr, params)
+			decoded, err := btcaddress.DecodeAddress(addrStr, params)
 			if err != nil {
 				t.Fatalf("DecodeAddress(%s): %v", addrStr, err)
 			}
@@ -328,7 +328,7 @@ func FuzzGeneratedWalletMutationParity(f *testing.F) {
 				mutation := fuzzDigest(seed, byte(i), byte(0x20+m))
 				mutated := mutateAddressForFuzz(addrStr, int(mutation[0]%6), mutation[1])
 
-				btcdAddr, errBtcd := btcutil.DecodeAddress(mutated, params)
+				btcdAddr, errBtcd := btcaddress.DecodeAddress(mutated, params)
 				poolScript, errPool := scriptForAddress(mutated, params)
 				if (errBtcd == nil) != (errPool == nil) {
 					t.Fatalf("decode disagreement for %q: btcdErr=%v poolErr=%v", mutated, errBtcd, errPool)

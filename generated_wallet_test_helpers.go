@@ -3,8 +3,8 @@ package main
 import (
 	"testing"
 
+	btcaddress "github.com/btcsuite/btcd/address/v2"
 	"github.com/btcsuite/btcd/btcec/v2"
-	"github.com/btcsuite/btcd/btcutil"
 )
 
 func generateTestWallet(t *testing.T) (address string, script []byte) {
@@ -13,8 +13,8 @@ func generateTestWallet(t *testing.T) (address string, script []byte) {
 	if err != nil {
 		t.Fatalf("generate private key: %v", err)
 	}
-	pkh := btcutil.Hash160(priv.PubKey().SerializeCompressed())
-	addr, err := btcutil.NewAddressWitnessPubKeyHash(pkh, ChainParams())
+	pkh := btcaddress.Hash160(priv.PubKey().SerializeCompressed())
+	addr, err := btcaddress.NewAddressWitnessPubKeyHash(pkh, ChainParams())
 	if err != nil {
 		t.Fatalf("generate witness address: %v", err)
 	}
@@ -37,8 +37,8 @@ func generateBenchmarkWorker() (workerName string, walletAddr string, walletScri
 	if err != nil {
 		panic(err)
 	}
-	pkh := btcutil.Hash160(priv.PubKey().SerializeCompressed())
-	addr, err := btcutil.NewAddressWitnessPubKeyHash(pkh, ChainParams())
+	pkh := btcaddress.Hash160(priv.PubKey().SerializeCompressed())
+	addr, err := btcaddress.NewAddressWitnessPubKeyHash(pkh, ChainParams())
 	if err != nil {
 		panic(err)
 	}

@@ -4,9 +4,9 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/btcsuite/btcd/btcutil"
-	"github.com/btcsuite/btcd/chaincfg"
-	"github.com/btcsuite/btcd/txscript"
+	btcaddress "github.com/btcsuite/btcd/address/v2"
+	"github.com/btcsuite/btcd/chaincfg/v2"
+	"github.com/btcsuite/btcd/txscript/v2"
 )
 
 // TestAddressRoundTripAllTypes verifies that address -> script -> address
@@ -31,7 +31,7 @@ func TestAddressRoundTripAllTypes(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Step 1: Verify btcd can decode it
-			btcdAddr, err := btcutil.DecodeAddress(tc.address, params)
+			btcdAddr, err := btcaddress.DecodeAddress(tc.address, params)
 			if err != nil {
 				t.Skipf("btcd cannot decode: %v", err)
 			}
@@ -68,7 +68,7 @@ func TestAddressRoundTripAllTypes(t *testing.T) {
 			}
 
 			// Step 6: Verify the result can be decoded by btcd
-			verifyAddr, err := btcutil.DecodeAddress(resultAddr, params)
+			verifyAddr, err := btcaddress.DecodeAddress(resultAddr, params)
 			if err != nil {
 				t.Errorf("btcd cannot decode result address %s: %v", resultAddr, err)
 			}

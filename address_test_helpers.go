@@ -3,7 +3,7 @@ package main
 import (
 	"errors"
 
-	"github.com/btcsuite/btcd/btcutil/bech32"
+	"github.com/btcsuite/btcd/address/v2/bech32"
 )
 
 func bech32Decode(s string) (hrp string, data []byte, err error) {

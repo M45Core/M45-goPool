@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/btcsuite/btcd/wire"
+	"github.com/btcsuite/btcd/wire/v2"
 )
 
 func parseCoinbaseOutputs(t *testing.T, raw []byte) []*wire.TxOut {

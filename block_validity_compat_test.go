@@ -6,12 +6,12 @@ import (
 	"testing"
 
 	"github.com/btcsuite/btcd/blockchain"
-	"github.com/btcsuite/btcd/btcutil"
-	"github.com/btcsuite/btcd/chaincfg"
+	"github.com/btcsuite/btcd/btcutil/v2"
+	"github.com/btcsuite/btcd/chaincfg/v2"
 	"github.com/btcsuite/btcd/database"
 	_ "github.com/btcsuite/btcd/database/ffldb"
-	"github.com/btcsuite/btcd/txscript"
-	"github.com/btcsuite/btcd/wire"
+	"github.com/btcsuite/btcd/txscript/v2"
+	"github.com/btcsuite/btcd/wire/v2"
 )
 
 // TestBuildBlockValidAgainstBtcd constructs a simple block using goPool's
@@ -67,7 +67,8 @@ func TestBuildBlockValidAgainstBtcd(t *testing.T) {
 	ex2 := []byte{0xaa, 0xbb, 0xcc, 0xdd}
 	ntimeHex := hex.EncodeToString(uint32ToBigEndian(uint32(job.Template.CurTime)))
 	nonceHex := "00000001"
-	version := int32(1)
+	// Current regtest rules require a version 4 or newer block header.
+	version := int32(4)
 
 	blockHex, _, _, _, err := buildBlock(job, ex1, ex2, ntimeHex, nonceHex, version)
 	if err != nil {

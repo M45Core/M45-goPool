@@ -6,7 +6,7 @@ import (
 	"math"
 	"testing"
 
-	"github.com/btcsuite/btcd/wire"
+	"github.com/btcsuite/btcd/wire/v2"
 )
 
 // TestSerializeCoinbaseTx_SingleOutputStructure uses btcd's wire.MsgTx to

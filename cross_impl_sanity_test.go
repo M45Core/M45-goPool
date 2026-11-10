@@ -6,12 +6,12 @@ import (
 	"testing"
 	"time"
 
+	btcaddress "github.com/btcsuite/btcd/address/v2"
 	"github.com/btcsuite/btcd/blockchain"
-	"github.com/btcsuite/btcd/btcutil"
-	"github.com/btcsuite/btcd/chaincfg"
-	"github.com/btcsuite/btcd/chaincfg/chainhash"
-	"github.com/btcsuite/btcd/txscript"
-	"github.com/btcsuite/btcd/wire"
+	"github.com/btcsuite/btcd/chaincfg/v2"
+	"github.com/btcsuite/btcd/chainhash/v2"
+	"github.com/btcsuite/btcd/txscript/v2"
+	"github.com/btcsuite/btcd/wire/v2"
 	"github.com/minio/sha256-simd"
 )
 
@@ -101,7 +101,7 @@ func TestBtcdAddressValidation(t *testing.T) {
 			}
 
 			// Use btcd's DecodeAddress which both goPool and pogolo rely on
-			addr, err := btcutil.DecodeAddress(tc.address, params)
+			addr, err := btcaddress.DecodeAddress(tc.address, params)
 
 			if tc.valid {
 				if err != nil {
@@ -389,7 +389,7 @@ func TestBtcdTaprootAddressScriptCompat(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Decode using btcd
-			btcdAddr, err := btcutil.DecodeAddress(tc.address, params)
+			btcdAddr, err := btcaddress.DecodeAddress(tc.address, params)
 			if err != nil {
 				t.Skipf("btcd doesn't support this address type: %v", err)
 			}
@@ -489,7 +489,7 @@ func TestBtcdBech32mEncodingCompat(t *testing.T) {
 			}
 
 			// Verify btcd can decode what we encoded
-			btcdAddr, err := btcutil.DecodeAddress(goPoolAddr, params)
+			btcdAddr, err := btcaddress.DecodeAddress(goPoolAddr, params)
 			if err != nil {
 				// Some test vectors are intentionally invalid lengths
 				if len(program) != 32 {
@@ -585,7 +585,7 @@ func TestBtcdAllAddressTypesScriptCompat(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Step 1: Decode using btcd
-			btcdAddr, err := btcutil.DecodeAddress(tc.address, params)
+			btcdAddr, err := btcaddress.DecodeAddress(tc.address, params)
 			if err != nil {
 				t.Fatalf("btcd DecodeAddress failed: %v", err)
 			}
@@ -689,12 +689,12 @@ func TestBtcdCoinbaseScriptCompat(t *testing.T) {
 			}
 
 			// Verify btcd can decode both addresses
-			poolBtcdAddr, err := btcutil.DecodeAddress(tc.poolAddress, params)
+			poolBtcdAddr, err := btcaddress.DecodeAddress(tc.poolAddress, params)
 			if err != nil {
 				t.Fatalf("btcd can't decode pool address: %v", err)
 			}
 
-			minerBtcdAddr, err := btcutil.DecodeAddress(tc.minerAddr, params)
+			minerBtcdAddr, err := btcaddress.DecodeAddress(tc.minerAddr, params)
 			if err != nil {
 				t.Fatalf("btcd can't decode miner address: %v", err)
 			}

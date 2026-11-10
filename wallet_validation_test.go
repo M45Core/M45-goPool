@@ -5,9 +5,9 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/btcsuite/btcd/btcutil"
-	"github.com/btcsuite/btcd/chaincfg"
-	"github.com/btcsuite/btcd/txscript"
+	btcaddress "github.com/btcsuite/btcd/address/v2"
+	"github.com/btcsuite/btcd/chaincfg/v2"
+	"github.com/btcsuite/btcd/txscript/v2"
 )
 
 func deterministicPKH() []byte {
@@ -29,8 +29,8 @@ func deterministicTaprootScript() []byte {
 func nestedSegwitAddress(t *testing.T, params *chaincfg.Params, pkh []byte) string {
 	t.Helper()
 	redeemScript := append([]byte{0x00, 0x14}, pkh...)
-	redeemHash := btcutil.Hash160(redeemScript)
-	addr, err := btcutil.NewAddressScriptHashFromHash(redeemHash, params)
+	redeemHash := btcaddress.Hash160(redeemScript)
+	addr, err := btcaddress.NewAddressScriptHashFromHash(redeemHash, params)
 	if err != nil {
 		t.Fatalf("NewAddressScriptHashFromHash(nested): %v", err)
 	}
@@ -72,11 +72,11 @@ func TestValidateWorkerWallet_AgreesWithBtcdDecodeAddress(t *testing.T) {
 		params := ChainParams()
 		pkh := deterministicPKH()
 
-		addrPKH, err := btcutil.NewAddressPubKeyHash(pkh, params)
+		addrPKH, err := btcaddress.NewAddressPubKeyHash(pkh, params)
 		if err != nil {
 			t.Fatalf("NewAddressPubKeyHash(%s): %v", netName, err)
 		}
-		addrWPKH, err := btcutil.NewAddressWitnessPubKeyHash(pkh, params)
+		addrWPKH, err := btcaddress.NewAddressWitnessPubKeyHash(pkh, params)
 		if err != nil {
 			t.Fatalf("NewAddressWitnessPubKeyHash(%s): %v", netName, err)
 		}
@@ -102,7 +102,7 @@ func TestValidateWorkerWallet_AgreesWithBtcdDecodeAddress(t *testing.T) {
 			SetChainParams(tt.network)
 
 			params := ChainParams()
-			_, errBtcd := btcutil.DecodeAddress(tt.address, params)
+			_, errBtcd := btcaddress.DecodeAddress(tt.address, params)
 
 			store := newDummyAccountStore(t)
 			okPool := validateWorkerWallet(nil, store, tt.address)
@@ -132,19 +132,19 @@ func TestScriptForAddress_MatchesBtcdPayToAddrScript(t *testing.T) {
 			pkh := deterministicPKH()
 
 			// P2PKH
-			addrPKH, err := btcutil.NewAddressPubKeyHash(pkh, net.params)
+			addrPKH, err := btcaddress.NewAddressPubKeyHash(pkh, net.params)
 			if err != nil {
 				t.Fatalf("NewAddressPubKeyHash: %v", err)
 			}
 			// Nested SegWit P2SH-P2WPKH
 			redeemScript := append([]byte{0x00, 0x14}, pkh...)
-			redeemHash := btcutil.Hash160(redeemScript)
-			addrNested, err := btcutil.NewAddressScriptHashFromHash(redeemHash, net.params)
+			redeemHash := btcaddress.Hash160(redeemScript)
+			addrNested, err := btcaddress.NewAddressScriptHashFromHash(redeemHash, net.params)
 			if err != nil {
 				t.Fatalf("NewAddressScriptHashFromHash: %v", err)
 			}
 			// P2WPKH
-			addrWPKH, err := btcutil.NewAddressWitnessPubKeyHash(pkh, net.params)
+			addrWPKH, err := btcaddress.NewAddressWitnessPubKeyHash(pkh, net.params)
 			if err != nil {
 				t.Fatalf("NewAddressWitnessPubKeyHash: %v", err)
 			}
@@ -153,12 +153,12 @@ func TestScriptForAddress_MatchesBtcdPayToAddrScript(t *testing.T) {
 			if taprootAddrStr == "" {
 				t.Fatalf("scriptToAddress(taproot) returned empty")
 			}
-			addrTR, err := btcutil.DecodeAddress(taprootAddrStr, net.params)
+			addrTR, err := btcaddress.DecodeAddress(taprootAddrStr, net.params)
 			if err != nil {
 				t.Fatalf("DecodeAddress(taproot): %v", err)
 			}
 
-			addrs := []btcutil.Address{addrPKH, addrNested, addrWPKH, addrTR}
+			addrs := []btcaddress.Address{addrPKH, addrNested, addrWPKH, addrTR}
 			for _, a := range addrs {
 				addrStr := a.EncodeAddress()
 				btcdScript, err := txscript.PayToAddrScript(a)

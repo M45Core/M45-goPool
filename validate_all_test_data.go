@@ -9,8 +9,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/btcsuite/btcd/btcutil"
-	"github.com/btcsuite/btcd/chaincfg"
+	btcaddress "github.com/btcsuite/btcd/address/v2"
+	"github.com/btcsuite/btcd/chaincfg/v2"
 )
 
 func main() {
@@ -73,7 +73,7 @@ func main() {
 			testParams = &chaincfg.TestNet3Params
 		}
 
-		addr, err := btcutil.DecodeAddress(tc.address, testParams)
+		addr, err := btcaddress.DecodeAddress(tc.address, testParams)
 
 		if tc.valid {
 			if err != nil {

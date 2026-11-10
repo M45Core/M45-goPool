@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/btcsuite/btcd/btcutil"
+	"github.com/btcsuite/btcd/btcutil/v2"
 )
 
 func finalizeRPCCredentials(cfg *Config, secretsPath string, forceCredentials bool, configPath string) error {

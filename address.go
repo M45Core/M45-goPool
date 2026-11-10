@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/btcsuite/btcd/btcutil"
-	"github.com/btcsuite/btcd/btcutil/base58"
-	"github.com/btcsuite/btcd/btcutil/bech32"
-	"github.com/btcsuite/btcd/chaincfg"
-	"github.com/btcsuite/btcd/txscript"
+	btcaddress "github.com/btcsuite/btcd/address/v2"
+	"github.com/btcsuite/btcd/address/v2/base58"
+	"github.com/btcsuite/btcd/address/v2/bech32"
+	"github.com/btcsuite/btcd/chaincfg/v2"
+	"github.com/btcsuite/btcd/txscript/v2"
 )
 
 // scriptForAddress performs local validation of a Bitcoin address for the given
@@ -21,7 +21,7 @@ func scriptForAddress(addr string, params *chaincfg.Params) ([]byte, error) {
 		return nil, errors.New("empty address")
 	}
 
-	addrDecoded, err := btcutil.DecodeAddress(addr, params)
+	addrDecoded, err := btcaddress.DecodeAddress(addr, params)
 	if err != nil {
 		return nil, fmt.Errorf("decode address: %w", err)
 	}

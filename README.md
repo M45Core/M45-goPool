@@ -44,14 +44,18 @@ The table below lists direct Go module dependencies from `go.mod` and the licens
 
 | Library | Version | License |
 |---|---:|---|
-| github.com/Backblaze/blazer | v0.7.2 | Apache-2.0 |
-| github.com/btcsuite/btcd | v0.25.0 | ISC |
-| github.com/btcsuite/btcd/btcec/v2 | v2.5.0 | ISC |
-| github.com/btcsuite/btcd/btcutil | v1.2.0 | ISC |
-| github.com/btcsuite/btcd/chaincfg/chainhash | v1.2.0 | ISC |
+| github.com/Backblaze/blazer | v0.9.0 | Apache-2.0 |
+| github.com/btcsuite/btcd | v0.27.0 | ISC |
+| github.com/btcsuite/btcd/address/v2 | v2.0.1 | ISC |
+| github.com/btcsuite/btcd/btcec/v2 | v2.5.1 | ISC |
+| github.com/btcsuite/btcd/btcutil/v2 | v2.0.2 | ISC |
+| github.com/btcsuite/btcd/chaincfg/v2 | v2.0.0 | ISC |
+| github.com/btcsuite/btcd/chainhash/v2 | v2.0.0 | ISC |
+| github.com/btcsuite/btcd/txscript/v2 | v2.0.1 | ISC |
+| github.com/btcsuite/btcd/wire/v2 | v2.0.2 | ISC |
 | github.com/bwmarrin/discordgo | v0.29.0 | BSD-3-Clause |
-| github.com/bytedance/sonic | v1.15.2 | Apache-2.0 |
-| github.com/clerk/clerk-sdk-go/v2 | v2.7.0 | MIT |
+| github.com/bytedance/sonic | v1.15.5 | Apache-2.0 |
+| github.com/clerk/clerk-sdk-go/v2 | v2.8.0 | MIT |
 | github.com/golang-jwt/jwt/v5 | v5.3.1 | MIT |
 | github.com/hako/durafmt | v0.0.0-20210608085754-5c1018a4e16b | MIT |
 | github.com/martinhoefling/goxkcdpwgen | v0.1.1 | MIT |
@@ -59,8 +63,8 @@ The table below lists direct Go module dependencies from `go.mod` and the licens
 | github.com/pebbe/zmq4 | v1.4.0 | BSD-3-Clause |
 | github.com/pelletier/go-toml | v1.9.5 | Apache-2.0 |
 | github.com/remeh/sizedwaitgroup | v1.0.0 | MIT |
-| golang.org/x/sys | v0.47.0 | BSD-3-Clause |
-| modernc.org/sqlite | v1.56.0 | BSD-3-Clause |
+| golang.org/x/sys | v0.50.0 | BSD-3-Clause |
+| modernc.org/sqlite | v1.62.0 | BSD-3-Clause |
 
 Additional third-party asset notices are in `THIRD_PARTY_NOTICES.md`.
 
@@ -106,7 +110,7 @@ Reproduce the benchmark and regenerate the SVG with:
 
 ## Quick start
 
-1. Install Go 1.26.8 or later and ZeroMQ (`libzmq3-dev` or equivalent depending on your platform).
+1. Install Go 1.26.10 or later and ZeroMQ (`libzmq3-dev` or equivalent depending on your platform).
 2. Clone the repo and build the pool:
     ```bash
     git clone https://github.com/M45Core/M45-goPool.git

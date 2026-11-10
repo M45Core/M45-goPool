@@ -4,9 +4,9 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/btcsuite/btcd/btcutil"
-	"github.com/btcsuite/btcd/chaincfg"
-	"github.com/btcsuite/btcd/txscript"
+	btcaddress "github.com/btcsuite/btcd/address/v2"
+	"github.com/btcsuite/btcd/chaincfg/v2"
+	"github.com/btcsuite/btcd/txscript/v2"
 )
 
 // TestTaprootAddressValidation verifies that goPool correctly validates
@@ -60,7 +60,7 @@ func TestTaprootAddressValidation(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Test with btcd's DecodeAddress
-			addr, errBtcd := btcutil.DecodeAddress(tc.address, tc.network)
+			addr, errBtcd := btcaddress.DecodeAddress(tc.address, tc.network)
 
 			// Test with goPool's scriptForAddress
 			script, errPool := scriptForAddress(tc.address, tc.network)
@@ -101,7 +101,7 @@ func TestTaprootScriptGeneration(t *testing.T) {
 	params := &chaincfg.MainNetParams
 
 	// Decode with btcd
-	addr, err := btcutil.DecodeAddress(taprootAddr, params)
+	addr, err := btcaddress.DecodeAddress(taprootAddr, params)
 	if err != nil {
 		t.Skipf("btcd doesn't support taproot: %v", err)
 	}

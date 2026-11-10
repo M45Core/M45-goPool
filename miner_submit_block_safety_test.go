@@ -12,7 +12,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/btcsuite/btcd/btcutil"
+	"github.com/btcsuite/btcd/btcutil/v2"
 )
 
 type countingSubmitRPC struct {

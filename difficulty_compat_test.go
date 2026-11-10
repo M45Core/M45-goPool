@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/btcsuite/btcd/blockchain"
-	"github.com/btcsuite/btcd/chaincfg"
+	"github.com/btcsuite/btcd/chaincfg/v2"
 )
 
 // TestDifficultyFromHashCompatWithBtcdWork verifies that goPool's

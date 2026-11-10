@@ -7,7 +7,7 @@ import (
 	"math"
 	"testing"
 
-	"github.com/btcsuite/btcd/wire"
+	"github.com/btcsuite/btcd/wire/v2"
 )
 
 // merkleRootFromBtcdTxs mirrors the standard merkle tree computation over a

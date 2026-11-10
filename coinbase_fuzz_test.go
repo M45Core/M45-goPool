@@ -5,7 +5,7 @@ import (
 	"sort"
 	"testing"
 
-	"github.com/btcsuite/btcd/chaincfg"
+	"github.com/btcsuite/btcd/chaincfg/v2"
 )
 
 // FuzzCoinbasePayoutSerializationRoundTrip stress-tests the full payout path:

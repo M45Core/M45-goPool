@@ -14,10 +14,11 @@ import (
 	"testing"
 	"time"
 
+	btcaddress "github.com/btcsuite/btcd/address/v2"
 	"github.com/btcsuite/btcd/blockchain"
-	"github.com/btcsuite/btcd/btcutil"
-	"github.com/btcsuite/btcd/chaincfg"
-	"github.com/btcsuite/btcd/wire"
+	"github.com/btcsuite/btcd/btcutil/v2"
+	"github.com/btcsuite/btcd/chaincfg/v2"
+	"github.com/btcsuite/btcd/wire/v2"
 )
 
 const bitcoinCoreRegtestIntegrationEnv = "GOPOOL_TEST_BITCOIN_CORE_REGTEST"
@@ -133,7 +134,7 @@ func TestBitcoinCoreRegtestAcceptsGoPoolBlock(t *testing.T) {
 	if err := walletRPC.callCtx(readyCtx, "getnewaddress", []any{"", "bech32"}, &payoutAddress); err != nil {
 		t.Fatalf("get regtest payout address: %v", err)
 	}
-	payoutAddr, err := btcutil.DecodeAddress(payoutAddress, &chaincfg.RegressionNetParams)
+	payoutAddr, err := btcaddress.DecodeAddress(payoutAddress, &chaincfg.RegressionNetParams)
 	if err != nil {
 		t.Fatalf("decode regtest payout address: %v", err)
 	}
