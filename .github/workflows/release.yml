@@ -15,7 +15,7 @@ permissions: {}
 
 env:
   RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
-  UMBREL_STORE_REPOSITORY: M45Core/M45-Umbrel-Community-App-Store
+  UMBREL_STORE_REPOSITORY: M45-Software/M45-Umbrel-Community-App-Store
 
 jobs:
   release:

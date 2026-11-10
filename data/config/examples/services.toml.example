@@ -32,5 +32,5 @@
   worker_notify_threshold_seconds = 300
 
 [status]
-  github_url = "https://github.com/M45Core"
+  github_url = "https://github.com/M45-Software/M45-goPool"
   mempool_address_url = "https://mempool.space/address/"

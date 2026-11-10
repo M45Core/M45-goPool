@@ -34,7 +34,9 @@ func TestHandleUmbrelPage(t *testing.T) {
 	body := rec.Body.String()
 	for _, want := range []string{
 		"Run M45 goPool on Umbrel",
-		"https://github.com/M45Core/M45-Umbrel-Community-App-Store",
+		`href="https://github.com/M45-Software/M45-goPool"`,
+		"https://github.com/M45-Software/M45-goPool/issues",
+		"https://github.com/M45-Software/M45-Umbrel-Community-App-Store",
 		"stratum+tcp://&lt;umbrel-lan-ip&gt;:23456",
 		"3B86bWqfjdQeLEr8nkeeWU6ygksc2K7MoL",
 		"https://m45core.com/umbrel",
