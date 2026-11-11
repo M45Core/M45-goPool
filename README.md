@@ -109,7 +109,7 @@ Reproduce the benchmark and regenerate the SVG with:
 
 ## Quick start
 
-1. Install Go 1.26.10 or later and ZeroMQ (`libzmq3-dev` or equivalent depending on your platform).
+1. Install Go 1.26.11 or later and ZeroMQ (`libzmq3-dev` or equivalent depending on your platform).
 2. Clone the repo and build the pool:
     ```bash
     git clone https://github.com/M45Core/M45-goPool.git

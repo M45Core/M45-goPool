@@ -1,6 +1,6 @@
 module goPool
 
-go 1.26.10
+go 1.26.11
 
 require (
 	github.com/Backblaze/blazer v0.9.0
